@@ -10,6 +10,14 @@ PROTO Pusher [
     rotation IS rotation
     name IS name
     children [
+      Camera {
+        translation 0 0.021 0
+        rotation 0 0 1 1.5708
+        fieldOfView 2
+        near 0.001
+        width 32
+        height 32
+      }
       DEF PusherBody Shape {
         appearance PBRAppearance {
           baseColor 0.2 0.2 0.2
@@ -33,7 +41,7 @@ PROTO Pusher [
         ]
         endPoint DEF PusherWheel Solid {
           translation 0.02 0 -0.011
-          rotation -3.925223937639759e-17 1 0 1.5708
+          rotation 0 1 0 1.5708
           children [
             DEF PusherWheelShape Shape {
               geometry Cylinder {
@@ -60,7 +68,7 @@ PROTO Pusher [
         ]
         endPoint DEF PusherWheel Solid {
           translation -0.02 0 -0.011
-          rotation -3.925223937639759e-17 1 0 1.5708
+          rotation 0 1 0 1.5708
           children [
             DEF PusherWheelShape Shape {
               geometry Cylinder {

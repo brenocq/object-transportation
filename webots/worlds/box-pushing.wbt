@@ -1,0 +1,82 @@
+#VRML_SIM R2022b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "../protos/Pusher.proto"
+
+WorldInfo {
+  basicTimeStep 16
+}
+Viewpoint {
+  orientation 0.28960977270245575 -0.25292374704521675 -0.9231228291705494 4.526587388039381
+  position -0.03717238095915166 -0.5187646149396722 0.5220665712185983
+}
+TexturedBackground {
+  texture "dusk"
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  floorTileSize 0.25 0.25
+  wallHeight 0.05
+}
+DEF Goal Solid {
+  translation -0.318462 0.380816 0.05
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 1
+        metalness 0
+      }
+      geometry DEF GoalGeometry Cylinder {
+        height 0.1
+        radius 0.05
+      }
+    }
+  ]
+  name "goal"
+  boundingObject USE GoalGeometry
+  physics Physics {
+  }
+}
+DEF Box Solid {
+  translation -0.0745153 0.0865388 0.05
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry DEF BoxGeometry Box {
+        size 0.1 0.1 0.1
+      }
+    }
+  ]
+  name "box"
+  boundingObject USE BoxGeometry
+  physics Physics {
+    density 1
+    mass 0.01
+  }
+}
+Pusher {
+  name "pusher0"
+  translation 0.00409446 0.0515135 0.016
+  rotation 0 0 1 1.5708
+}
+Pusher {
+  name "pusher3"
+  translation 0.00720225 0.109636 0.016
+  rotation 0 0 1 1.5708
+}
+Pusher {
+  name "pusher1"
+  translation -0.100331 0.000761173 0.016
+}
+Pusher {
+  name "pusher2"
+  translation -0.0454606 0.000110686 0.016
+}

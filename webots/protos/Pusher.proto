@@ -1,0 +1,87 @@
+PROTO Pusher [
+  field SFString   name "pusher"
+  field SFVec3f    translation  0 0 0.016
+  field SFRotation rotation     0 0 1 0
+  field SFFloat    bodyMass     1
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    name IS name
+    children [
+      DEF PusherBody Shape {
+        appearance PBRAppearance {
+          baseColor 0.2 0.2 0.2
+          roughness 1
+          metalness 0
+        }
+        geometry Cylinder {
+          height 0.03
+          radius 0.02
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis -1 0 0
+          anchor 0 0 -0.011
+        }
+        device [
+          RotationalMotor {
+            name "leftMotor"
+          }
+        ]
+        endPoint DEF PusherWheel Solid {
+          translation 0.02 0 -0.011
+          rotation -3.925223937639759e-17 1 0 1.5708
+          children [
+            DEF PusherWheelShape Shape {
+              geometry Cylinder {
+                height 0.005
+                radius 0.005
+              }
+            }
+          ]
+          name "leftWheel"
+          boundingObject USE PusherWheelShape
+          physics Physics {
+          }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis -1 0 0
+          anchor 0 0 -0.011
+        }
+        device [
+          RotationalMotor {
+            name "rightMotor"
+          }
+        ]
+        endPoint DEF PusherWheel Solid {
+          translation -0.02 0 -0.011
+          rotation -3.925223937639759e-17 1 0 1.5708
+          children [
+            DEF PusherWheelShape Shape {
+              geometry Cylinder {
+                height 0.005
+                radius 0.005
+              }
+            }
+          ]
+          name "rightWheel"
+          boundingObject USE PusherWheelShape
+          physics Physics {
+          }
+        }
+      }
+    ]
+    boundingObject USE PusherBody
+    physics Physics {
+      density -1
+      mass IS bodyMass
+    }
+    controller "pusher"
+  }
+}
+

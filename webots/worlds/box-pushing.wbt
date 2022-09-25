@@ -4,21 +4,26 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "../protos/Pusher.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
 
 WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation 0.26756004239424525 -0.04355238511212667 -0.9625563949530617 3.4824542292157608
-  position 0.9373356238576132 -0.2589413132822733 0.6625806427024951
+  orientation 0.3494384011410919 -0.2770583922360933 -0.8950594679123328 4.776457181600408
+  position -0.284356661774009 -0.9818083255434428 0.769332333691891
 }
 TexturedBackground {
-  texture "dusk"
+  texture "noon_cloudy_mountains"
 }
 TexturedBackgroundLight {
 }
 RectangleArena {
+  rotation 0 1 0 0
   floorTileSize 0.25 0.25
+  floorAppearance Parquetry {
+    type "light strip"
+  }
   wallHeight 0.05
 }
 Solid {
@@ -42,7 +47,7 @@ Solid {
   }
 }
 Solid {
-  translation -0.0745153 0.0865388 0.05
+  translation -0.184515 0.166539 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -64,20 +69,9 @@ Solid {
 }
 Pusher {
   name "pusher0"
-  translation 0.249881 -0.0280397 0.016
-  rotation 0 0 1 1.5708
-}
-Pusher {
-  name "pusher2"
-  translation 0.0845899 -0.174087 0.016
-  rotation 0 0 -1 -0.5236053071795865
-}
-Pusher {
-  name "pusher3"
-  translation 0.304755 0.119011 0.016
-  rotation 0 0 1 1.5708
+  translation -0.18 0 0.016
 }
 Pusher {
   name "pusher1"
-  translation -0.145243 -0.223928 0.016
+  translation 0.25 0 0.016
 }

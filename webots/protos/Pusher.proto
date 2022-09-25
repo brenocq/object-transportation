@@ -10,13 +10,79 @@ PROTO Pusher [
     rotation IS rotation
     name IS name
     children [
-      Camera {
+      DistanceSensor {
         translation 0 0.021 0
+        rotation 0 0 1 1.5707963267948968
+        name "ir0"
+      }
+      DistanceSensor {
+        translation 0.01485 0.01485 0
+        rotation 0 0 1 0.7853
+        name "ir1"
+      }
+      DistanceSensor {
+        translation 0.021 0 0
+        name "ir2"
+      }
+      DistanceSensor {
+        translation 0.01485 -0.01485 0
+        rotation 0 0 1 -0.7853996938995746
+        name "ir3"
+      }
+      DistanceSensor {
+        translation 0 -0.021 0
+        rotation 0 0 1 -1.5707996938995747
+        name "ir4"
+      }
+      DistanceSensor {
+        translation -0.01485 -0.01485 0
+        rotation 0 0 1 -2.3561950010791604
+        name "ir5"
+      }
+      DistanceSensor {
+        translation -0.021 0 0
+        rotation 0 0 1 3.141592653589793
+        name "ir6"
+      }
+      DistanceSensor {
+        translation -0.01485 0.01485 0
+        rotation 0 0 1 2.3561996938995744
+        name "ir7"
+      }
+      Camera {
+        translation 0 0 0.03
         rotation 0 0 1 1.5708
-        fieldOfView 2
-        near 0.001
+        name "cam0"
+        fieldOfView 1.5707
         width 32
         height 32
+        near 0.001
+      }
+      Camera {
+        translation 0 0 0.03
+        name "cam1"
+        fieldOfView 1.5707
+        width 32
+        height 32
+        near 0.001
+      }
+      Camera {
+        translation 0 0 0.03
+        rotation 0 0 1 -1.5707
+        name "cam2"
+        fieldOfView 1.5707
+        width 32
+        height 32
+        near 0.001
+      }
+      Camera {
+        translation 0 0 0.03
+        rotation 0 0 1 -3.141592
+        name "cam3"
+        fieldOfView 1.5707
+        width 32
+        height 32
+        near 0.001
       }
       DEF PusherBody Shape {
         appearance PBRAppearance {
@@ -92,4 +158,3 @@ PROTO Pusher [
     controller "pusher"
   }
 }
-

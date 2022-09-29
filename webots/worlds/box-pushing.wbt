@@ -5,13 +5,14 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "../protos/Pusher.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/solids/protos/SolidBox.proto"
 
 WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation 0.3494384011410919 -0.2770583922360933 -0.8950594679123328 4.776457181600408
-  position -0.284356661774009 -0.9818083255434428 0.769332333691891
+  orientation 0.5330267452088236 -0.017875882190196576 -0.8459095351915653 3.1983099231697345
+  position 0.6106223609807505 -0.131401870862228 1.4671110289285467
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -26,8 +27,23 @@ RectangleArena {
   }
   wallHeight 0.05
 }
+SolidBox {
+  translation 0.12 -0.39 -0.01
+  name "box(1)"
+  size 0.1 1 0.3
+  appearance PBRAppearance {
+    baseColor 0 0 0
+    baseColorMap ImageTexture {
+      url [
+        "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/default/worlds/textures/tagged_wall.jpg"
+      ]
+    }
+    roughness 0.5
+    metalness 0
+  }
+}
 Solid {
-  translation -0.318462 0.380816 0.05
+  translation -0.408462 0.380816 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -47,7 +63,7 @@ Solid {
   }
 }
 Solid {
-  translation -0.184515 0.166539 0.05
+  translation -0.174515 0.146539 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -69,9 +85,10 @@ Solid {
 }
 Pusher {
   name "pusher0"
-  translation -0.18 0 0.016
+  translation -0.18 -0.19 0.016
 }
 Pusher {
-  name "pusher1"
-  translation 0.25 0 0.016
+  name "pusher0(1)"
+  translation 0.26 -0.19 0.016
+  rotation 0 0 1 1.5708
 }

@@ -3,16 +3,15 @@
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
-EXTERNPROTO "../protos/Pusher.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
-EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/solids/protos/SolidBox.proto"
+IMPORTABLE EXTERNPROTO "../protos/Pusher.proto"
 
 WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.43925468787745453 0.42172139752518395 0.7932253034586616 1.3927076624263064
-  position -0.6147149930027532 -1.1996312103466447 1.3386177091430906
+  orientation -0.4381370687385653 0.47432452334708913 0.7635785195700139 1.299236246645904
+  position -0.764321641458243 -1.1334410575538691 1.3386177091430906
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -27,23 +26,8 @@ RectangleArena {
   }
   wallHeight 0.05
 }
-SolidBox {
-  translation 0.12 -0.2 0.025
-  name "obstacle"
-  size 0.02 0.6 0.05
-  appearance PBRAppearance {
-    baseColor 0 0 0
-    baseColorMap ImageTexture {
-      url [
-        "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/default/worlds/textures/tagged_wall.jpg"
-      ]
-    }
-    roughness 0.5
-    metalness 0
-  }
-}
-Solid {
-  translation -0.408462 0.380816 0.05
+DEF GOAL Solid {
+  translation -0.358462 0.320816 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -51,19 +35,19 @@ Solid {
         roughness 1
         metalness 0
       }
-      geometry DEF GoalGeometry Cylinder {
+      geometry DEF GOAL_GEOMETRY Cylinder {
         height 0.1
         radius 0.05
       }
     }
   ]
   name "goal"
-  boundingObject USE GoalGeometry
+  boundingObject USE GOAL_GEOMETRY
   physics Physics {
   }
 }
-Solid {
-  translation -0.174515 0.146539 0.05
+DEF BOX Solid {
+  translation 0.085485 -0.103461 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -71,29 +55,20 @@ Solid {
         roughness 1
         metalness 0
       }
-      geometry DEF BoxGeometry Box {
+      geometry DEF BOX_GEOMETRY Box {
         size 0.1 0.1 0.1
       }
     }
   ]
   name "box"
-  boundingObject USE BoxGeometry
+  boundingObject USE BOX_GEOMETRY
   physics Physics {
     density -1
     mass 0.01
   }
 }
-Pusher {
-  name "pusher0"
-  translation -0.18 -0.19 0.016
-}
-Pusher {
-  name "pusher1"
-  translation -0.15 0.07 0.016
-  rotation 0 0 1 1.5708
-}
-Pusher {
-  name "pusher2"
-  translation -0.21 0.0699996 0.016
-  rotation 0 0 1 1.5708
+Robot {
+  name "supervisor"
+  controller "supervisor"
+  supervisor TRUE
 }

@@ -2,4 +2,5 @@ build/
 /worlds/.box-pushing.wbproj
 /worlds/.box-pushing.jpg
 /controllers/pusher/*.png
+/controllers/supervisor/*.json
 

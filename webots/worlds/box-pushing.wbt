@@ -11,8 +11,8 @@ WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation 0.5330267452088236 -0.017875882190196576 -0.8459095351915653 3.1983099231697345
-  position 0.6106223609807505 -0.131401870862228 1.4671110289285467
+  orientation -0.43925468787745453 0.42172139752518395 0.7932253034586616 1.3927076624263064
+  position -0.6147149930027532 -1.1996312103466447 1.3386177091430906
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -28,9 +28,9 @@ RectangleArena {
   wallHeight 0.05
 }
 SolidBox {
-  translation 0.12 -0.39 -0.01
-  name "box(1)"
-  size 0.1 1 0.3
+  translation 0.12 -0.2 0.025
+  name "obstacle"
+  size 0.02 0.6 0.05
   appearance PBRAppearance {
     baseColor 0 0 0
     baseColorMap ImageTexture {
@@ -88,7 +88,12 @@ Pusher {
   translation -0.18 -0.19 0.016
 }
 Pusher {
-  name "pusher0(1)"
-  translation 0.26 -0.19 0.016
+  name "pusher1"
+  translation -0.15 0.07 0.016
+  rotation 0 0 1 1.5708
+}
+Pusher {
+  name "pusher2"
+  translation -0.21 0.0699996 0.016
   rotation 0 0 1 1.5708
 }

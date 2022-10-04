@@ -1,23 +1,59 @@
 from controller import Robot, Camera, DistanceSensor, Motor
 from enum import Enum
 import random
+
 # Global definitions
 TIME_STEP = 32
 MAX_SPEED = 6.28
+IMAGE_SIZE = 32
+# Robot image analysis
+# +---------+
+# |         |
+# |         |
+# |         | <--- IMAGE_MAX_ROW row just before robot seeing itself
+# | rrrrrrr |
+# +rrrrrrrrr+
+IMAGE_MAX_ROW = 32-4
 
+# State
 states = ["SEARCH_BOX", "MOVE_TOWARD", "ARRIVED_AT_BOX", "MOVE_AROUND", "PUSH", "BE_A_GOAL", "RANDOM_WALK"]
-
 state = "SEARCH_BOX"
-counter = 0
-RW_turning = False  # helps manage the random walk, for when it reaches a wall
-turnTimer = random.randint(30, 100) # the amount of timesteps to turn in randomWalk
+def changeState(newState):
+    global state
+    print(f'Changed to state "{newState}"')
+    state = newState
+
+# Colors
+class Color:
+    def __init__(self, rmin, rmax, gmin, gmax, bmin, bmax):
+        self.rmin = rmin
+        self.rmax = rmax
+        self.gmin = gmin
+        self.gmax = gmax
+        self.bmin = bmin
+        self.bmax = bmax
+
+    def check(self, r, g, b):
+        if r >= self.rmin and r <= self.rmax and g >= self.gmin and g <= self.gmax and b >= self.bmin and b <= self.bmax:
+            return True
+        else:
+            return False
+
+# Color interval for box and goal
+boxColor = Color(110, 255, 0, 60, 0, 60)
+goalColor = Color(0, 60, 127, 255, 0, 60)
 
 # Devices
 robot = Robot()
-irs = []
-cams = []
+irs = []# Infrared devices
+cams = []# Camera devices
 leftMotor = robot.getDevice('leftMotor')
 rightMotor = robot.getDevice('rightMotor')
+
+# Auxiliary
+counter = 0
+RW_turning = False  # helps manage the random walk, for when it reaches a wall
+turnTimer = random.randint(30, 100) # the amount of timesteps to turn in randomWalk
 
 ########## INITIALIZE ##########
 def init():
@@ -39,38 +75,30 @@ def init():
 
 ########## SENSORS ##########
 def canSeeBox():
-    return canSeeColor(110, 255, 0, 60, 0, 60)  # 32 chanegd to 60 for brighter sides of the box
-
+    return cameraCheckColor(boxColor)
 def canSeeGoal():
-    return canSeeColor(0, 60, 127, 255, 0, 60) 
-
-def canSeeColor(rmin, rmax, gmin, gmax, bmin, bmax):
-    # NOTE: Checking ALL cameras
-    for i in range(4):
-        cam = cams[i]
-        #for cam in cams:
-        w = cam.getWidth()
-        h = cam.getHeight()
-        image = cam.getImage()
-        for x in range(w):
-            for y in range(h):
-                r = cam.imageGetRed(image, w, x, y)
-                g = cam.imageGetGreen(image, w, x, y)
-                b = cam.imageGetBlue(image, w, x, y)
-                if r >= rmin and r <= rmax and g >= gmin and g <= gmax and b >= bmin and b <= bmax:
-                    file = 'recognized.png'
-                    cam.saveImage(file, 100)
-                    print(f'r:{r} g:{g} b{b} -> image saved {file}')
+    return cameraCheckColor(goalColor)
+def cameraCheckColor(color):
+    images = [cams[0].getImage(), cams[1].getImage(), cams[2].getImage(), cams[3].getImage()]
+    for y in range(IMAGE_MAX_ROW, -1, -1):# From IMAGE_MAX_ROW to 0
+        for i in range(4):
+            for x in range(IMAGE_SIZE):
+                r = cams[i].imageGetRed(images[i], IMAGE_SIZE, x, y)
+                g = cams[i].imageGetGreen(images[i], IMAGE_SIZE, x, y)
+                b = cams[i].imageGetBlue(images[i], IMAGE_SIZE, x, y)
+                if color.check(r, g, b):
+                    #file = 'recognized.png'
+                    #cam.saveImage(file, 100)
+                    #print(f'r:{r} g:{g} b{b} -> image saved {file}')
                     return True
     return False
 
 
 # to determine which direction the box is in (relative to the robot)
-def directionToColor(rmin, rmax, gmin, gmax, bmin, bmax):
+def directionToColor(color):
     # NOTE: Only checking one row in the image
-    cameras = [0,1,2,3]
     direction = ['front', 'right', 'back', 'left']
-    for i in cameras:
+    for i in range(4):
         cam = cams[i]
         w = cam.getWidth()
         h = cam.getHeight()
@@ -83,71 +111,64 @@ def directionToColor(rmin, rmax, gmin, gmax, bmin, bmax):
                 # we've parsed a row in the image where the box was seen, 
                 # we know enough about the box's location to turn towards it
                 # (saves having to loop through the rest of the image)
-                break  
-                
+                break
+
             for x in range(w):
                 r = cam.imageGetRed(image, w, x, y)
                 g = cam.imageGetGreen(image, w, x, y)
                 b = cam.imageGetBlue(image, w, x, y)
-                if r >= rmin and r <= rmax and g >= gmin and g <= gmax and b >= bmin and b <= bmax:
+                if color.check(r, g, b):
                     index_target.append(x)
-                    
+
         # object found, 
         # return the camera that found it and where in the image it was found
-        if index_target:  
+        if index_target:
             direction = direction[i]
             center = sum(index_target)/len(index_target)
-            return [direction, center] 
-    
-    return [False, 0] # object not found
-    
-        
-        
-            
-######### MOVEMENT CONTROLLERS   ###########
+            return [direction, center]
 
+    return [False, 0] # object not found
+
+######### MOVEMENT CONTROLLERS ###########
 def moveForward():
-    print("  going straight ahead")
+    #print("  going straight ahead")
     leftMotor.setVelocity(MAX_SPEED*1)
     rightMotor.setVelocity(MAX_SPEED*1)
 
 def moveSlightLeft():
-    print("  turning slight left")
+    #print("  turning slight left")
     leftMotor.setVelocity(MAX_SPEED*0.5)
     rightMotor.setVelocity(MAX_SPEED*1)
 
 def moveSlightRight():
-    print("  turning slight right")
+    #print("  turning slight right")
     leftMotor.setVelocity(MAX_SPEED*1)
     rightMotor.setVelocity(MAX_SPEED*0.5)
 
 def TurnRight():
-    print("  turning right")
+    #print("  turning right")
     leftMotor.setVelocity(MAX_SPEED*1)
     rightMotor.setVelocity(MAX_SPEED*-1)
 
 def TurnLeft():
-    print("  turning left")
+    #print("  turning left")
     leftMotor.setVelocity(MAX_SPEED*-1)
     rightMotor.setVelocity(MAX_SPEED*1)
 
 
 ########## STATES ##########
-
 def searchBox():
-    print('Search box')
-    global state
+    #print('Search box')
     leftMotor.setVelocity(MAX_SPEED*-0.5)
     rightMotor.setVelocity(MAX_SPEED*0.5)
     if canSeeBox():
-        state = "MOVE_TOWARD"
+        changeState("MOVE_TOWARD")
     else:
-        state = "RANDOM_WALK"
+        changeState("RANDOM_WALK")
 
 def moveToward():
-    print('Move forward')
-    global state
-    [direction, center] = directionToColor(110, 255, 0, 60, 0, 60) # find where the box is
+    #print('Move toward')
+    [direction, center] = directionToColor(boxColor) # find where the box is
     if direction:
         if direction == "front":
             if center<14:
@@ -166,45 +187,44 @@ def moveToward():
             else:
                 TurnRight()
     else:
-        state = "SEARCH_BOX"
-       
-    if irs[0].getValue() < 10:  
+        changeState("SEARCH_BOX")
+
+    if irs[0].getValue() < 10:
     # irs sensor typically doesn't get close to 0 
     # before jumping up to 1000 when hitting the box
-        state = "ARRIVED_AT_BOX"
+        changeState("ARRIVED_AT_BOX")
 
 
 def arrivedAtBox():
-    print('Arrived At Box')
-    global state
+    #print('Arrived At Box')
     #leftMotor.setVelocity(MAX_SPEED*0)
     #rightMotor.setVelocity(MAX_SPEED*0)
     if canSeeGoal():
-        state = "MOVE_AROUND"
+        changeState("MOVE_AROUND")
     else:
-        state = "PUSH"
-    
-    
+        changeState("PUSH")
+
+
 def randomWalk():
-    print('Random Walking')
-    global state, counter, RW_turning, turnTimer
+    #print('Random Walking')
+    global counter, RW_turning, turnTimer
     wallDistParam = 400
     nearWall = (irs[0].getValue() < wallDistParam) \
         or (irs[1].getValue() < wallDistParam)     \
         or (irs[7].getValue() < wallDistParam)
-    
+
     if canSeeBox():
-        state = "MOVE_TOWARD"
-    
+        changeState("MOVE_TOWARD")
+
     elif not nearWall and not RW_turning:
-        print("   go straight")
+        #print("   go straight")
         counter = 0
         leftMotor.setVelocity(MAX_SPEED*1)
         rightMotor.setVelocity(MAX_SPEED*1)
     else:
         RW_turning = True
         if counter < turnTimer:
-            print("   turn")
+            #print("   turn")
             leftMotor.setVelocity(MAX_SPEED*-1)
             rightMotor.setVelocity(MAX_SPEED*1)
             counter += 1
@@ -212,37 +232,32 @@ def randomWalk():
             RW_turning = False
             turnTimer = random.randint(30, 100)
         #counter = 0
-            
-   
+
+
 
 def moveAround():
-    print('Move around')
-    global state
+    #print('Move around')
     #idk just spin around for now or smth
     leftMotor.setVelocity(MAX_SPEED*0.5)
     rightMotor.setVelocity(MAX_SPEED*-0.5)
     #if irs[0].getValue() < 0.05:
-    #    state = "PUSH"
+    #    changeState("PUSH")
 
 def push():
-    print('Push')
-    global state
     if not canSeeGoal():
         leftMotor.setVelocity(MAX_SPEED)
         rightMotor.setVelocity(MAX_SPEED)
     else:
-        state = "MOVE_AROUND"
-    
-        
+        changeState("MOVE_AROUND")
 
 def beAGoal():
-    print('Be a goal')
+    #print('Be a goal')
+    pass
 
 def main():
     init()
     print('Robot initialized')
-    while robot.step(TIME_STEP) != -1:  
-         
+    while robot.step(TIME_STEP) != -1:
         if state == "SEARCH_BOX":
             searchBox()
         elif state == "MOVE_TOWARD":
@@ -257,8 +272,7 @@ def main():
             randomWalk()
         elif state == "BE_A_GOAL":
             beAGoal()
-        print(" ")
-        
+
 
 if __name__ == '__main__':
     main()

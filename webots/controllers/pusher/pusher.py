@@ -13,7 +13,7 @@ IMAGE_SIZE = 32
 # |         | <--- IMAGE_MAX_ROW row just before robot seeing itself
 # | rrrrrrr |
 # +rrrrrrrrr+
-IMAGE_MAX_ROW = 32-4
+IMAGE_MAX_ROW = 32-6
 
 # State
 states = ["SEARCH_BOX", "MOVE_TOWARD", "ARRIVED_AT_BOX", "MOVE_AROUND", "PUSH", "BE_A_GOAL", "RANDOM_WALK"]
@@ -41,7 +41,8 @@ class Color:
 
 # Color interval for box and goal
 boxColor = Color(110, 255, 0, 60, 0, 60)
-goalColor = Color(0, 60, 127, 255, 0, 60)
+goalColor = Color(0, 60, 110, 255, 0, 60)
+robotColor = Color(0, 60, 0, 60, 110, 255)
 
 # Devices
 robot = Robot()
@@ -93,6 +94,85 @@ def cameraCheckColor(color):
                     return True
     return False
 
+def freeDirectionToBox():
+    '''
+    Return: [isFree, direction]
+    isFree -> If there is free space to push the box
+    direction -> Direction from -180.0 to 180.0 (0.0 is in front of the robot)
+    '''
+    images = [cams[0].getImage(), cams[1].getImage(), cams[2].getImage(), cams[3].getImage()]
+    for y in range(IMAGE_MAX_ROW, -1, -1):# From IMAGE_MAX_ROW to 0
+        for i in range(4):
+            for x in range(IMAGE_SIZE):
+                r = cams[i].imageGetRed(images[i], IMAGE_SIZE, x, y)
+                g = cams[i].imageGetGreen(images[i], IMAGE_SIZE, x, y)
+                b = cams[i].imageGetBlue(images[i], IMAGE_SIZE, x, y)
+
+                # Check if pixel is box pixel
+                if boxColor.check(r, g, b):
+                    # Find intervals of box pixels in this row without robot pixels below
+                    intervals = []
+                    start = 0
+                    end = 0
+                    for I in range(4):
+                        for X in range(IMAGE_SIZE):
+                            r = cams[I].imageGetRed(images[I], IMAGE_SIZE, X, y)
+                            g = cams[I].imageGetGreen(images[I], IMAGE_SIZE, X, y)
+                            b = cams[I].imageGetBlue(images[I], IMAGE_SIZE, X, y)
+                            rBelow = cams[I].imageGetRed(images[I], IMAGE_SIZE, X, y+1)
+                            gBelow = cams[I].imageGetGreen(images[I], IMAGE_SIZE, X, y+1)
+                            bBelow = cams[I].imageGetBlue(images[I], IMAGE_SIZE, X, y+1)
+
+                            if not boxColor.check(r, g, b) or robotColor.check(rBelow, gBelow, bBelow):
+                                if start != end:
+                                    intervals.append([start, end])
+                                start = X + I*IMAGE_SIZE
+                                end = X + I*IMAGE_SIZE
+                            else:
+                                end = X + I*IMAGE_SIZE
+                    if start != end:
+                        intervals.append([start, end])
+
+                    # Merge intervals (wrapping around)
+                    idxBeginInt = -1
+                    idxEndInt = -1
+                    for i, interval in enumerate(intervals):
+                        if interval[0] == 0:
+                            idxBeginInt = i
+                        if interval[1] == 4*IMAGE_SIZE-1:
+                            idxEndInt = i
+                    if idxBeginInt != -1 and idxEndInt != -1:
+                        intervals[idxBeginInt][0] = intervals[idxEndInt][0]
+                        intervals = intervals[:idxEndInt] + intervals[idxEndInt+1 :]
+
+                    # Find largest interval
+                    idxLargest = 0
+                    sizeLargest = 0
+                    for i, interval in enumerate(intervals):
+                        size = interval[1] - interval[0]
+                        if interval[0] > interval[1]:
+                            size = interval[1] + (IMAGE_SIZE*4-interval[0])
+                        if size >= sizeLargest:
+                            idxLargest = i
+                            sizeLargest = size
+
+                    # Calculate direction
+                    if sizeLargest == 0:
+                        continue
+                    else:
+                        interval = intervals[idxLargest]
+                        # Calculate mean pixel position
+                        pixelPos = (interval[0] + sizeLargest/2)%(IMAGE_SIZE*4)
+                        # Convert to [0,1]
+                        meanPos = pixelPos/(IMAGE_SIZE*4.0)
+                        # Convert to [-2, 2]
+                        meanPos = (meanPos*4 - 0.5)
+                        if meanPos > 2:
+                            meanPos = -2+(meanPos-2)
+                        # Calculate direction
+                        direction = meanPos*90
+                        return True, direction
+    return False, 0
 
 # to determine which direction the box is in (relative to the robot)
 def directionToColor(color):
@@ -258,6 +338,7 @@ def main():
     init()
     print('Robot initialized')
     while robot.step(TIME_STEP) != -1:
+        [canSee, direction] = freeDirectionToBox()
         if state == "SEARCH_BOX":
             searchBox()
         elif state == "MOVE_TOWARD":

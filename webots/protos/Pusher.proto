@@ -86,7 +86,7 @@ PROTO Pusher [
       }
       DEF PusherBody Shape {
         appearance PBRAppearance {
-          baseColor 0.2 0.2 0.2
+          baseColor 0.0 0.0 1.0
           roughness 1
           metalness 0
         }

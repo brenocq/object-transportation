@@ -6,7 +6,7 @@ import json
 
 ########## GLOBAL VARIABLES ##########
 TIME_STEP = 128 # Record positions every 128ms
-NUM_ROBOTS = 3 # Number of robots to spawn
+NUM_ROBOTS = 6 # Number of robots to spawn
 ARENA_SIZE = 0.4
 ROBOT_RADIUS = 0.02
 MIN_BOX_GOAL_DIST = 0.01
@@ -76,9 +76,10 @@ def main():
     currRepetition = 0
     numRepetitions = 5 # Number of repetitions to be performed (box reaching goal or timeout)
     currRepetitionTime = 0.0 # Current repetition time
-    maxRepetitionTime = 10.0 # Timeout in seconds
+    maxRepetitionTime = 60.0 # Timeout in seconds
     recording = {"config": {}, "repetitions": []} # Recorded data
     recording['config']['numRobots'] = NUM_ROBOTS
+    recording['config']['timeStep'] = TIME_STEP
     recording['config']['maxRepetitionTime'] = maxRepetitionTime
     recording['config']['numRepetitions'] = numRepetitions
     recording['config']['initalGoalPosition'] = sup.getFromDef('GOAL').getField('translation').getSFVec3f()
@@ -88,7 +89,7 @@ def main():
 
     spawnRobots()
 
-    print(f'Configuration:\n  - Repetitions: {numRepetitions}\n  - Max time: {maxRepetitionTime}s')
+    print(f'Configuration:\n  - Num robots: {NUM_ROBOTS}\n  - Repetitions: {numRepetitions}\n  - Max time: {maxRepetitionTime}s')
     print('Recording...')
     boxPosRecording = []
     while sup.step(TIME_STEP) != -1 and currRepetition < numRepetitions:

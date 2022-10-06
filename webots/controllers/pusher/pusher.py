@@ -190,7 +190,6 @@ def directionToColor(color):
             if index_target:
                 # we've parsed a row in the image where the box was seen, 
                 # we know enough about the box's location to turn towards it
-                # (saves having to loop through the rest of the image)
                 break
 
             for x in range(w):
@@ -211,34 +210,28 @@ def directionToColor(color):
 
 ######### MOVEMENT CONTROLLERS ###########
 def moveForward():
-    #print("  going straight ahead")
     leftMotor.setVelocity(MAX_SPEED*1)
     rightMotor.setVelocity(MAX_SPEED*1)
 
 def moveSlightLeft():
-    #print("  turning slight left")
     leftMotor.setVelocity(MAX_SPEED*0.5)
     rightMotor.setVelocity(MAX_SPEED*1)
 
 def moveSlightRight():
-    #print("  turning slight right")
     leftMotor.setVelocity(MAX_SPEED*1)
     rightMotor.setVelocity(MAX_SPEED*0.5)
 
 def TurnRight():
-    #print("  turning right")
     leftMotor.setVelocity(MAX_SPEED*1)
     rightMotor.setVelocity(MAX_SPEED*-1)
 
 def TurnLeft():
-    #print("  turning left")
     leftMotor.setVelocity(MAX_SPEED*-1)
     rightMotor.setVelocity(MAX_SPEED*1)
 
 
 ########## STATES ##########
 def searchBox():
-    #print('Search box')
     leftMotor.setVelocity(MAX_SPEED*-0.5)
     rightMotor.setVelocity(MAX_SPEED*0.5)
     if canSeeBox():
@@ -247,7 +240,6 @@ def searchBox():
         changeState("RANDOM_WALK")
 
 def moveToward():
-    #print('Move toward')
     [direction, center] = directionToColor(boxColor) # find where the box is
     if direction:
         if direction == "front":
@@ -276,9 +268,8 @@ def moveToward():
 
 
 def arrivedAtBox():
-    #print('Arrived At Box')
-    #leftMotor.setVelocity(MAX_SPEED*0)
-    #rightMotor.setVelocity(MAX_SPEED*0)
+    leftMotor.setVelocity(MAX_SPEED*0)
+    rightMotor.setVelocity(MAX_SPEED*0)
     if canSeeGoal():
         changeState("MOVE_AROUND")
     else:
@@ -286,7 +277,6 @@ def arrivedAtBox():
 
 
 def randomWalk():
-    #print('Random Walking')
     global counter, RW_turning, turnTimer
     wallDistParam = 400
     nearWall = (irs[0].getValue() < wallDistParam) \
@@ -297,7 +287,6 @@ def randomWalk():
         changeState("MOVE_TOWARD")
 
     elif not nearWall and not RW_turning:
-        #print("   go straight")
         counter = 0
         leftMotor.setVelocity(MAX_SPEED*1)
         rightMotor.setVelocity(MAX_SPEED*1)
@@ -316,8 +305,7 @@ def randomWalk():
 
 
 def moveAround():
-    #print('Move around')
-    #idk just spin around for now or smth
+    # SHOULD BE CHANGED!!
     leftMotor.setVelocity(MAX_SPEED*0.5)
     rightMotor.setVelocity(MAX_SPEED*-0.5)
     #if irs[0].getValue() < 0.05:

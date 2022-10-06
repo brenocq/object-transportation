@@ -3,13 +3,14 @@ import random
 from math import sqrt
 import datetime
 import json
+import csv
 
 ########## GLOBAL VARIABLES ##########
 TIME_STEP = 128 # Record positions every 128ms
 NUM_ROBOTS = 6 # Number of robots to spawn
 ARENA_SIZE = 0.4
 ROBOT_RADIUS = 0.02
-MIN_BOX_GOAL_DIST = 0.01
+MIN_BOX_GOAL_DIST = 0.13  # CHANGED from 0.01!
 
 sup = Supervisor()
 
@@ -87,6 +88,7 @@ def main():
     initialGoalRotation = sup.getFromDef('GOAL').getField('rotation').getSFRotation()
     initialBoxRotation = sup.getFromDef('GOAL').getField('rotation').getSFRotation()
 
+    timings = []
     spawnRobots()
 
     print(f'Configuration:\n  - Num robots: {NUM_ROBOTS}\n  - Repetitions: {numRepetitions}\n  - Max time: {maxRepetitionTime}s')
@@ -103,6 +105,9 @@ def main():
         # Check if should stop repetition
         dx = goalPos[0] - boxPos[0]
         dy = goalPos[1] - boxPos[1]
+        
+        #print('distance = ', sqrt(dx*dx + dy*dy))
+        
         if sqrt(dx*dx + dy*dy) <= MIN_BOX_GOAL_DIST or currRepetitionTime >= maxRepetitionTime:
             # Add repetition data to recording
             repetitionData = {}
@@ -118,17 +123,39 @@ def main():
             sup.getFromDef('GOAL').getField('rotation').setSFRotation(initialGoalRotation)
             sup.getFromDef('BOX').getField('rotation').setSFRotation(initialBoxRotation)
             spawnRobots()
-
+            
+            # print and save time taken for box to reach goal
+            if sqrt(dx*dx + dy*dy) <= MIN_BOX_GOAL_DIST:
+            	timings.append([NUM_ROBOTS, False, True, currRepetitionTime])
+            	print(f'Successful box movement duration: {currRepetitionTime}.')
+            else:
+            	timings.append([NUM_ROBOTS, False, False, None])
+            	print('Task not completed within time limit.')
+            	
             # Advance to next repetition
             currRepetitionTime = 0
             boxPosRecording = []
             currRepetition += 1
+            
+            
 
+    
     # Save recording to file
     filename = 'recording_'+str(datetime.datetime.now().timestamp())+'.json'
     with open(filename, 'w') as outfile:
         json.dump(recording, outfile)
     print(f'Saved recording to {filename}')
+    
+    filename = 'exp_Timings_'+str(datetime.datetime.now().timestamp())+'.csv'
+    
+    # Save experiment timings to csv (for easier visualisation)
+    with open(filename, 'w') as outfile:
+        writer = csv.writer(outfile)
+        header = ['NumRobots', 'NewImplementation', 'Success', 'Duration']
+        writer.writerow(header)
+        writer.writerows(timings)
+    print(f'Saved timings to {filename}')
+    
 
 if __name__ == '__main__':
     main()

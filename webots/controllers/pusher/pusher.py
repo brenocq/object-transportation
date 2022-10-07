@@ -306,8 +306,8 @@ def randomWalk():
 
 def moveAround():
     # SHOULD BE CHANGED!!
-    leftMotor.setVelocity(MAX_SPEED*0.5)
-    rightMotor.setVelocity(MAX_SPEED*-0.5)
+    leftMotor.setVelocity(MAX_SPEED*-1)
+    rightMotor.setVelocity(MAX_SPEED*-1)
     #if irs[0].getValue() < 0.05:
     #    changeState("PUSH")
 

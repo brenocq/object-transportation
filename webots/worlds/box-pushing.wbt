@@ -5,13 +5,15 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
 IMPORTABLE EXTERNPROTO "../protos/Pusher.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/31a9167fb367a732a52b971b555229e679ab7735/projects/objects/apartment_structure/protos/Wall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/31a9167fb367a732a52b971b555229e679ab7735/projects/appearances/protos/Roughcast.proto"
 
 WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.37569574102739656 0.809458259158076 0.4512538496840249 0.8794734611870563
-  position -1.3269380381754177 -0.3930678571115362 1.2609942818030877
+  orientation -0.40161738650682594 0.8336665514210493 0.3790825185855473 1.2920250901038257
+  position -0.8114738333670081 -0.22267709310540162 1.5828459273576192
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -31,7 +33,7 @@ RectangleArena {
   wallHeight 0.05
 }
 DEF GOAL Solid {
-  translation -0.358462 0.320816 0.05
+  translation -0.388462 0.390816 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -50,8 +52,18 @@ DEF GOAL Solid {
   physics Physics {
   }
 }
+DEF WALL Wall {
+  translation 0.15 0.15 0
+  size 0.02 0.7 0.1
+  appearance Roughcast {
+    colorOverride 0.3 0.3 0.3
+    textureTransform TextureTransform {
+      scale 2.4 1
+    }
+  }
+}
 DEF BOX Solid {
-  translation 0.085485 -0.103461 0.05
+  translation -0.2 0.14 0.05
   children [
     Shape {
       appearance PBRAppearance {

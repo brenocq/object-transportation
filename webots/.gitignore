@@ -3,4 +3,5 @@ build/
 /worlds/.box-pushing.jpg
 /controllers/pusher/*.png
 /controllers/supervisor/*.json
-
+/controllers/supervisor/*.csv
+/controllers/supervisor/*.png

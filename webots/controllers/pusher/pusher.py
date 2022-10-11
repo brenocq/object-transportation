@@ -16,8 +16,14 @@ IMAGE_SIZE = 32
 IMAGE_MAX_ROW = 32-6
 
 # State
-states = ["SEARCH_BOX", "MOVE_TOWARD", "ARRIVED_AT_BOX", "MOVE_AROUND", "PUSH", "BE_A_GOAL", "RANDOM_WALK"]
-state = "SEARCH_BOX"
+class State(Enum):
+    SEARCH_OBJECT = 1
+    APPROACH_OBJECT = 2
+    MOVE_AROUND_OBJECT = 3
+    PUSH_OBJECT = 4
+    BE_A_GOAL = 5
+state = State.SEARCH_OBJECT
+
 def changeState(newState):
     global state
     print(f'Changed to state "{newState}"')
@@ -39,8 +45,8 @@ class Color:
         else:
             return False
 
-# Color interval for box and goal
-boxColor = Color(110, 255, 0, 60, 0, 60)
+# Color interval for object and goal
+objectColor = Color(110, 255, 0, 60, 0, 60)
 goalColor = Color(0, 60, 110, 255, 0, 60)
 robotColor = Color(0, 60, 0, 60, 110, 255)
 
@@ -74,9 +80,31 @@ def init():
     leftMotor.setVelocity(0.0)
     rightMotor.setVelocity(0.0)
 
-########## SENSORS ##########
-def canSeeBox():
-    return cameraCheckColor(boxColor)
+
+######### MOVEMENT CONTROLLERS ###########
+def moveForward():
+    leftMotor.setVelocity(MAX_SPEED*1)
+    rightMotor.setVelocity(MAX_SPEED*1)
+
+def moveSlightLeft():
+    leftMotor.setVelocity(MAX_SPEED*0.5)
+    rightMotor.setVelocity(MAX_SPEED*1)
+
+def moveSlightRight():
+    leftMotor.setVelocity(MAX_SPEED*1)
+    rightMotor.setVelocity(MAX_SPEED*0.5)
+
+def turnRight():
+    leftMotor.setVelocity(MAX_SPEED*1)
+    rightMotor.setVelocity(MAX_SPEED*-1)
+
+def turnLeft():
+    leftMotor.setVelocity(MAX_SPEED*-1)
+    rightMotor.setVelocity(MAX_SPEED*1)
+
+########## SENSING ##########
+def canSeeObject():
+    return cameraCheckColor(objectColor)
 def canSeeGoal():
     return cameraCheckColor(goalColor)
 def cameraCheckColor(color):
@@ -94,11 +122,19 @@ def cameraCheckColor(color):
                     return True
     return False
 
-def freeDirectionToBox():
+def freeDirectionToObject():
     '''
+    Free direction to object algorithm
+
     Return: [isFree, direction]
-    isFree -> If there is free space to push the box
+    isFree -> If there is free space to push the object
     direction -> Direction from -180.0 to 180.0 (0.0 is in front of the robot)
+
+    The algorithm will scan the image from bottom to top searching for the first row
+    of object pixels that does not contain robot pixels below. After finding the row of
+    interest, the algorithm calculates the angle from the robot to the object [-180, 180]
+    (0 being front, -90 being left, 90 being right). Only largest interval of object pixels
+    in the row is used to calculate the angle.
     '''
     images = [cams[0].getImage(), cams[1].getImage(), cams[2].getImage(), cams[3].getImage()]
     for y in range(IMAGE_MAX_ROW, -1, -1):# From IMAGE_MAX_ROW to 0
@@ -108,9 +144,9 @@ def freeDirectionToBox():
                 g = cams[i].imageGetGreen(images[i], IMAGE_SIZE, x, y)
                 b = cams[i].imageGetBlue(images[i], IMAGE_SIZE, x, y)
 
-                # Check if pixel is box pixel
-                if boxColor.check(r, g, b):
-                    # Find intervals of box pixels in this row without robot pixels below
+                # Check if pixel is object pixel
+                if objectColor.check(r, g, b):
+                    # Find intervals of object pixels in this row without robot pixels below
                     intervals = []
                     start = 0
                     end = 0
@@ -123,7 +159,7 @@ def freeDirectionToBox():
                             gBelow = cams[I].imageGetGreen(images[I], IMAGE_SIZE, X, y+1)
                             bBelow = cams[I].imageGetBlue(images[I], IMAGE_SIZE, X, y+1)
 
-                            if not boxColor.check(r, g, b) or robotColor.check(rBelow, gBelow, bBelow):
+                            if not objectColor.check(r, g, b) or robotColor.check(rBelow, gBelow, bBelow):
                                 if start != end:
                                     intervals.append([start, end])
                                 start = X + I*IMAGE_SIZE
@@ -174,149 +210,103 @@ def freeDirectionToBox():
                         return True, direction
     return False, 0
 
-# to determine which direction the box is in (relative to the robot)
-def directionToColor(color):
-    # NOTE: Only checking one row in the image
-    direction = ['front', 'right', 'back', 'left']
-    for i in range(4):
-        cam = cams[i]
-        w = cam.getWidth()
-        h = cam.getHeight()
-        image = cam.getImage()
-        # an array to store which pixels we can see the object in
-        # (helps to determine which direction to move in)
-        index_target = []
-        for y in range(h):
-            if index_target:
-                # we've parsed a row in the image where the box was seen, 
-                # we know enough about the box's location to turn towards it
-                break
+def distanceToObject():
+    '''
+    Distance to algorithm
 
-            for x in range(w):
-                r = cam.imageGetRed(image, w, x, y)
-                g = cam.imageGetGreen(image, w, x, y)
-                b = cam.imageGetBlue(image, w, x, y)
-                if color.check(r, g, b):
-                    index_target.append(x)
+    Return: distance
+    distance -> Number of row between top of the image and first object pixel
 
-        # object found, 
-        # return the camera that found it and where in the image it was found
-        if index_target:
-            direction = direction[i]
-            center = sum(index_target)/len(index_target)
-            return [direction, center]
+    The algorithm will scan the image from top to bottom searching for the first row
+    that contains object pixel. If the object is visible in the whole image, 0 is
+    returned. If the object is not in the image, IMAGE_SIZE is returned.
+    '''
+    for y in range(IMAGE_SIZE):# From 0 to IMAGE_SIZE-1
+        for i in range(4):
+            for x in range(IMAGE_SIZE):
+                r = cams[i].imageGetRed(cams[i].getImage(), IMAGE_SIZE, x, y)
+                g = cams[i].imageGetGreen(cams[i].getImage(), IMAGE_SIZE, x, y)
+                b = cams[i].imageGetBlue(cams[i].getImage(), IMAGE_SIZE, x, y)
 
-    return [False, 0] # object not found
-
-######### MOVEMENT CONTROLLERS ###########
-def moveForward():
-    leftMotor.setVelocity(MAX_SPEED*1)
-    rightMotor.setVelocity(MAX_SPEED*1)
-
-def moveSlightLeft():
-    leftMotor.setVelocity(MAX_SPEED*0.5)
-    rightMotor.setVelocity(MAX_SPEED*1)
-
-def moveSlightRight():
-    leftMotor.setVelocity(MAX_SPEED*1)
-    rightMotor.setVelocity(MAX_SPEED*0.5)
-
-def TurnRight():
-    leftMotor.setVelocity(MAX_SPEED*1)
-    rightMotor.setVelocity(MAX_SPEED*-1)
-
-def TurnLeft():
-    leftMotor.setVelocity(MAX_SPEED*-1)
-    rightMotor.setVelocity(MAX_SPEED*1)
-
+                # Check if pixel is object pixel
+                if objectColor.check(r, g, b):
+                    return y
+    return IMAGE_SIZE
 
 ########## STATES ##########
-def searchBox():
-    leftMotor.setVelocity(MAX_SPEED*-0.5)
-    rightMotor.setVelocity(MAX_SPEED*0.5)
-    if canSeeBox():
-        changeState("MOVE_TOWARD")
-    else:
-        changeState("RANDOM_WALK")
-
-def moveToward():
-    [direction, center] = directionToColor(boxColor) # find where the box is
-    if direction:
-        if direction == "front":
-            if center<14:
-                moveSlightRight()
-            elif 14<=center<=18:
-                moveForward()
-            else:
-                moveSlightLeft()
-        elif direction == "left":
-            TurnRight()
-        elif direction == "right":
-            TurnLeft()
-        else: # the target is behind the robot
-            if center<=15:
-                TurnLeft()
-            else:
-                TurnRight()
-    else:
-        changeState("SEARCH_BOX")
-
-    if irs[0].getValue() < 10:
-    # irs sensor typically doesn't get close to 0 
-    # before jumping up to 1000 when hitting the box
-        changeState("ARRIVED_AT_BOX")
-
-
-def arrivedAtBox():
-    leftMotor.setVelocity(MAX_SPEED*0)
-    rightMotor.setVelocity(MAX_SPEED*0)
-    if canSeeGoal():
-        changeState("MOVE_AROUND")
-    else:
-        changeState("PUSH")
-
-
-def randomWalk():
+def searchObject():
     global counter, RW_turning, turnTimer
     wallDistParam = 400
     nearWall = (irs[0].getValue() < wallDistParam) \
         or (irs[1].getValue() < wallDistParam)     \
         or (irs[7].getValue() < wallDistParam)
 
-    if canSeeBox():
-        changeState("MOVE_TOWARD")
-
+    if canSeeObject():
+        changeState(State.APPROACH_OBJECT)
     elif not nearWall and not RW_turning:
         counter = 0
-        leftMotor.setVelocity(MAX_SPEED*1)
-        rightMotor.setVelocity(MAX_SPEED*1)
+        leftMotor.setVelocity(MAX_SPEED)
+        rightMotor.setVelocity(MAX_SPEED)
     else:
         RW_turning = True
         if counter < turnTimer:
-            #print("   turn")
-            leftMotor.setVelocity(MAX_SPEED*-1)
-            rightMotor.setVelocity(MAX_SPEED*1)
+            leftMotor.setVelocity(-MAX_SPEED)
+            rightMotor.setVelocity(MAX_SPEED)
             counter += 1
         else:
             RW_turning = False
             turnTimer = random.randint(30, 100)
-        #counter = 0
 
+def approachObject():
+    minDist = 5# Minimum distance to the object to change state
+    minAngle = 10# The front angle interval is [-minAngle, minAngle]
 
+    isFree, direction = freeDirectionToObject()
+    isInFront = direction < minAngle and direction > -minAngle
 
-def moveAround():
-    # SHOULD BE CHANGED!!
-    leftMotor.setVelocity(MAX_SPEED*-1)
-    rightMotor.setVelocity(MAX_SPEED*-1)
-    #if irs[0].getValue() < 0.05:
-    #    changeState("PUSH")
-
-def push():
-    if not canSeeGoal():
-        leftMotor.setVelocity(MAX_SPEED)
-        rightMotor.setVelocity(MAX_SPEED)
+    # Move towards the object
+    if isFree:
+        if isInFront:
+            moveForward()
+        elif direction < -minAngle:
+            moveSlightRight()
+        else:
+            moveSlightLeft()
     else:
-        changeState("MOVE_AROUND")
+        # Could not see object, search object
+        changeState(State.SEARCH_OBJECT)
+
+    # Check if arrived
+    if distanceToObject() < minDist and isInFront:
+        # Close enough to object and is looking straight at it
+        changeState(State.MOVE_AROUND_OBJECT)
+
+wallDist = 15
+def moveAroundObject():
+    dist = 0.05
+    # Left-hand-wall-following behavior
+    # TODO set maximum time rotating
+    pass
+
+    #if irs[7].getValue() > wallDist:
+    #    # Rotate left
+    #    leftMotor.setVelocity(-0.5*MAX_SPEED)
+    #    rightMotor.setVelocity(0.5*MAX_SPEED)
+    #else:
+    #    leftMotor.setVelocity(0.5*MAX_SPEED)
+    #    rightMotor.setVelocity(0.5*MAX_SPEED)
+
+def pushObject():
+    isFree, direction = freeDirectionToObject()
+    if isFree:
+        if direction < 10 and direction > -10:
+            moveForward()
+        elif direction < -10:
+            moveSlightRight()
+        else:
+            moveSlightLeft()
+    else:
+        changeState(State.SEARCH_OBJECT)
 
 def beAGoal():
     #print('Be a goal')
@@ -326,22 +316,16 @@ def main():
     init()
     print('Robot initialized')
     while robot.step(TIME_STEP) != -1:
-        [canSee, direction] = freeDirectionToBox()
-        if state == "SEARCH_BOX":
-            searchBox()
-        elif state == "MOVE_TOWARD":
-            moveToward()
-        elif state == "ARRIVED_AT_BOX":
-            arrivedAtBox()
-        elif state == "MOVE_AROUND":
-            moveAround()
-        elif state == "PUSH":
-            push()
-        elif state == "RANDOM_WALK":
-            randomWalk()
-        elif state == "BE_A_GOAL":
+        if state == State.SEARCH_OBJECT:
+            searchObject()
+        elif state == State.APPROACH_OBJECT:
+            approachObject()
+        elif state == State.MOVE_AROUND_OBJECT:
+            moveAroundObject()
+        elif state == State.PUSH_OBJECT:
+            pushObject()
+        elif state == State.BE_A_GOAL:
             beAGoal()
-
 
 if __name__ == '__main__':
     main()

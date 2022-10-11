@@ -136,8 +136,8 @@ def main():
 
     # Testing config
     numberRobotsPerTrial = [1]
-    numRepetitions = 1
-    maxRepetitionTime = 60.0
+    numRepetitions = 3
+    maxRepetitionTime = 120.0
 
     recording = {"config": {}, "repetitions": []} # Recorded data
     recording['config']['numRobots'] = numberRobotsPerTrial

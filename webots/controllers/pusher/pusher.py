@@ -1,5 +1,7 @@
 from controller import Robot, Camera, DistanceSensor, Motor
 from enum import Enum
+import math
+import numpy as np
 import random
 
 # Global definitions
@@ -7,6 +9,7 @@ TIME_STEP = 32
 MAX_SPEED = 6.28
 IMAGE_SIZE = 32
 IR_SENSOR_LIMIT = 950.0
+ROBOT_RADIUS = 0.02
 # Robot image analysis
 # +---------+
 # |         |
@@ -24,6 +27,7 @@ class State(Enum):
     PUSH_OBJECT = 4
     BE_A_GOAL = 5
 state = State.SEARCH_OBJECT
+worldTime = 0
 
 def changeState(newState):
     global state
@@ -102,6 +106,48 @@ def turnRight(power=1.0):
 def turnLeft(power=1.0):
     leftMotor.setVelocity(-MAX_SPEED*power)
     rightMotor.setVelocity(MAX_SPEED*power)
+
+######### VECTOR CONTROLLERS ###########
+def dirToVec(direction):
+    '''
+    Given the direction, convert to vector.
+    Y axis is forward, X axis is to the right.
+    '''
+    return np.array([math.sin(math.radians(direction)), math.cos(math.radians(direction))])
+
+def vecToMotor(moveVector):
+    '''
+    Given the movement vector, set the motor speeds.
+    Y axis is forward, X axis is to the right.
+    '''
+    norm = np.linalg.norm(moveVector)
+    ang = 0
+
+    # Allow swap front every X milliseconds to avoid getting stuck
+    if worldTime % vecToMotor.swapTime == 0:
+        vecToMotor.moveForward =  moveVector[1] >= 0
+
+    if vecToMotor.moveForward:
+        ang = math.atan2(moveVector[0], moveVector[1])
+    else:
+        ang = math.atan2(-moveVector[0], moveVector[1])
+    #print(moveVec)
+    #print(norm)
+    #print(ang)
+
+    # Calculate power
+    power = np.array([math.cos(ang) - math.sin(ang), math.cos(ang) + math.sin(ang)])
+    power *= norm
+    # Normalize power
+    if power[0] > 1.0:
+        power /= power[0]
+    if power[1] > 1.0:
+        power /= power[1]
+    # Apply power
+    leftMotor.setVelocity(MAX_SPEED*power[0])
+    rightMotor.setVelocity(MAX_SPEED*power[1])
+vecToMotor.moveForward = 1
+vecToMotor.swapTime = 512
 
 ########## SENSING ##########
 def canSeeObject():
@@ -301,86 +347,87 @@ def approachObject():
     minAngle = 10# The front angle interval is [-minAngle, minAngle]
 
     isVisible, direction = directionToObject()
-    isInFront = direction < minAngle and direction > -minAngle
-
-    # Move towards the object
     if isVisible:
-        if isInFront:
-            moveForward()
-        elif direction < -minAngle:
-            turnRight()
-        else:
-            turnLeft()
+        vecToMotor(dirToVec(direction))
     else:
-        # Could not see object, search object
         changeState(State.SEARCH_OBJECT)
 
     # Check if arrived
     dist = distanceToObject()
-    print(f'dir: {direction} dist: {dist}')
+    isInFront = (direction < minAngle and direction > -minAngle) \
+        or (direction > -math.pi+minAngle or direction > math.pi-minAngle)
     if dist < minDist and isInFront:
         # Close enough to object and is looking straight at it
         changeState(State.MOVE_AROUND_OBJECT)
 
 def moveAroundObject():
+    #----- Check goal visible -----#
+    if worldTime % 2048 == 0:
+        # Check every 2 seconds if shuold push the object
+        if not canSeeGoal():
+            changeState(State.PUSH_OBJECT)
+
     #----- Parameters -----#
-    distMin = 200
-    distMax = IR_SENSOR_LIMIT
+    moveVec = np.array([0, 1]) # Robot move vector (X is to the right, Y is forward)
+    minDist = 300
+
+    #----- Input -----#
     distToObject = distanceToObject()
     visible, dirToObject = directionToObject()
+
+    idxF = 0
+    if dirToObject < 0:
+        idxF = 4# If robot moving "backward", front sensor is behind
+
+    irF = irs[idxF].getValue()# IR front
+    irFR = irs[idxF+1].getValue()# IR front-right
+    irR = irs[idxF+2].getValue()# IR right
 
     #----- Check visible -----#
     if not visible:
         changeState(State.SEARCH_OBJECT)
 
-    #----- Read sensor -----#
-    irFront = irs[0].getValue()
-    irLeft = irs[7].getValue()
-    # Deal with wrong measurements when too close
-    #if irFront >= IR_SENSOR_LIMIT and distToObject == 0 and :
-    #    irFront = 0
-    #if irLeft >= IR_SENSOR_LIMIT and distToObject == 0:
-    #    irLeft = 0
+    #----- Force field -----#
+    objVec = dirToVec(dirToObject)
 
-    #----- Left hand wall following behavior -----#
-    print(f'L:{irLeft} F:{irFront}')
-    if (irFront < distMax):
-        print("Front can see, turn right")
-        turnRight(-0.5)
-    elif irLeft < distMin:
-        print("Too close, turn right")
-        turnRight(-0.5)
-    elif irLeft >= distMax:
-        print("Left can't see, turn left")
-        turnLeft(-0.5)
-    else:
-        moveForward(0.5)
-    #elif ir <= distMin:
-    #    # Too close, Move backward while rotating to the right
-    #    print("Close")
-    #    #leftMotor.setVelocity(-0.5*MAX_SPEED)
-    #    #rightMotor.setVelocity(-MAX_SPEED)
+    # Force to move around the object
+    moveVec = np.array([-objVec[1], objVec[0]])
+
+    # Force to keep distance from object
+    if irR > IR_SENSOR_LIMIT:
+        moveVec += objVec
+    elif irR < minDist:
+        moveVec += -objVec
+
+    # Force to deviate from obstacles
+    if irF < minDist:
+        moveVec = np.array([-1,0])
+
+    #----- Output - move -----#
+    vecToMotor(moveVec)
 
 def pushObject():
     isFree, direction, _ = freeDirectionToObject()
     if isFree:
-        if direction < 10 and direction > -10:
-            moveForward()
-        elif direction < -10:
-            moveSlightRight()
-        else:
-            moveSlightLeft()
+        vecToMotor(dirToVec(direction))
     else:
         changeState(State.SEARCH_OBJECT)
+
+    if worldTime % 2048 == 0:
+        # Check every 2 seconds if shuold move around the object
+        if canSeeGoal():
+            changeState(State.MOVE_AROUND_OBJECT)
 
 def beAGoal():
     #print('Be a goal')
     pass
 
 def main():
+    global worldTime
     init()
     print('Robot initialized')
     while robot.step(TIME_STEP) != -1:
+        worldTime += TIME_STEP
         if state == State.SEARCH_OBJECT:
             searchObject()
         elif state == State.APPROACH_OBJECT:

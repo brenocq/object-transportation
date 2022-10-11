@@ -6,6 +6,7 @@ import random
 TIME_STEP = 32
 MAX_SPEED = 6.28
 IMAGE_SIZE = 32
+IR_SENSOR_LIMIT = 950.0
 # Robot image analysis
 # +---------+
 # |         |
@@ -82,9 +83,9 @@ def init():
 
 
 ######### MOVEMENT CONTROLLERS ###########
-def moveForward():
-    leftMotor.setVelocity(MAX_SPEED*1)
-    rightMotor.setVelocity(MAX_SPEED*1)
+def moveForward(power=1.0):
+    leftMotor.setVelocity(MAX_SPEED*power)
+    rightMotor.setVelocity(MAX_SPEED*power)
 
 def moveSlightLeft():
     leftMotor.setVelocity(MAX_SPEED*0.5)
@@ -94,13 +95,13 @@ def moveSlightRight():
     leftMotor.setVelocity(MAX_SPEED*1)
     rightMotor.setVelocity(MAX_SPEED*0.5)
 
-def turnRight():
-    leftMotor.setVelocity(MAX_SPEED*1)
-    rightMotor.setVelocity(MAX_SPEED*-1)
+def turnRight(power=1.0):
+    leftMotor.setVelocity(MAX_SPEED*power)
+    rightMotor.setVelocity(-MAX_SPEED*power)
 
-def turnLeft():
-    leftMotor.setVelocity(MAX_SPEED*-1)
-    rightMotor.setVelocity(MAX_SPEED*1)
+def turnLeft(power=1.0):
+    leftMotor.setVelocity(-MAX_SPEED*power)
+    rightMotor.setVelocity(MAX_SPEED*power)
 
 ########## SENSING ##########
 def canSeeObject():
@@ -108,13 +109,12 @@ def canSeeObject():
 def canSeeGoal():
     return cameraCheckColor(goalColor)
 def cameraCheckColor(color):
-    images = [cams[0].getImage(), cams[1].getImage(), cams[2].getImage(), cams[3].getImage()]
     for y in range(IMAGE_MAX_ROW, -1, -1):# From IMAGE_MAX_ROW to 0
         for i in range(4):
             for x in range(IMAGE_SIZE):
-                r = cams[i].imageGetRed(images[i], IMAGE_SIZE, x, y)
-                g = cams[i].imageGetGreen(images[i], IMAGE_SIZE, x, y)
-                b = cams[i].imageGetBlue(images[i], IMAGE_SIZE, x, y)
+                r = cams[i].imageGetRed(cams[i].getImage(), IMAGE_SIZE, x, y)
+                g = cams[i].imageGetGreen(cams[i].getImage(), IMAGE_SIZE, x, y)
+                b = cams[i].imageGetBlue(cams[i].getImage(), IMAGE_SIZE, x, y)
                 if color.check(r, g, b):
                     #file = 'recognized.png'
                     #cam.saveImage(file, 100)
@@ -122,22 +122,28 @@ def cameraCheckColor(color):
                     return True
     return False
 
-def freeDirectionToObject():
+def colorDirectionScan(color, rowRange, checkFree):
     '''
-    Free direction to object algorithm
+    Color direction scan algorithm
 
-    Return: [isFree, direction]
-    isFree -> If there is free space to push the object
+    Input: color, rowRange, checkFree
+    color -> Color that is search for
+    rowRange -> Sequence of rows to check in the images
+    checkFree -> If should ignore color if there is robot color below
+
+    Return: found, direction, freeSpace
+    found -> If found a row of interest
     direction -> Direction from -180.0 to 180.0 (0.0 is in front of the robot)
+    freeSpace -> Size of the free space in pixels
 
-    The algorithm will scan the image from bottom to top searching for the first row
-    of object pixels that does not contain robot pixels below. After finding the row of
-    interest, the algorithm calculates the angle from the robot to the object [-180, 180]
-    (0 being front, -90 being left, 90 being right). Only largest interval of object pixels
-    in the row is used to calculate the angle.
+    The algorithm will scan the image following the rowRange searching for the first row
+    of color pixels (if checkFree, the pixel should not have robot pixel below). After
+    finding the row of interest, the algorithm calculates the angle from the robot to
+    the color [-180, 180] (0 being front, -90 being left, 90 being right). Only largest
+    interval of color pixels in the row is used to calculate the angle.
     '''
     images = [cams[0].getImage(), cams[1].getImage(), cams[2].getImage(), cams[3].getImage()]
-    for y in range(IMAGE_MAX_ROW, -1, -1):# From IMAGE_MAX_ROW to 0
+    for y in rowRange:# From IMAGE_MAX_ROW to 0
         for i in range(4):
             for x in range(IMAGE_SIZE):
                 r = cams[i].imageGetRed(images[i], IMAGE_SIZE, x, y)
@@ -145,7 +151,7 @@ def freeDirectionToObject():
                 b = cams[i].imageGetBlue(images[i], IMAGE_SIZE, x, y)
 
                 # Check if pixel is object pixel
-                if objectColor.check(r, g, b):
+                if color.check(r, g, b):
                     # Find intervals of object pixels in this row without robot pixels below
                     intervals = []
                     start = 0
@@ -159,7 +165,7 @@ def freeDirectionToObject():
                             gBelow = cams[I].imageGetGreen(images[I], IMAGE_SIZE, X, y+1)
                             bBelow = cams[I].imageGetBlue(images[I], IMAGE_SIZE, X, y+1)
 
-                            if not objectColor.check(r, g, b) or robotColor.check(rBelow, gBelow, bBelow):
+                            if not color.check(r, g, b) or (checkFree and robotColor.check(rBelow, gBelow, bBelow)):
                                 if start != end:
                                     intervals.append([start, end])
                                 start = X + I*IMAGE_SIZE
@@ -207,8 +213,41 @@ def freeDirectionToObject():
                             meanPos = -2+(meanPos-2)
                         # Calculate direction
                         direction = meanPos*90
-                        return True, direction
-    return False, 0
+                        return True, direction, sizeLargest
+    return False, 0, 0
+
+def freeDirectionToObject():
+    '''
+    Free direction to object algorithm
+
+    Return: isFree, direction, freeSpace
+    isFree -> If there is free space to push the object
+    direction -> Direction from -180.0 to 180.0 (0.0 is in front of the robot)
+    freeSpace -> Size of the free space in pixels
+
+    The algorithm will scan the image from bottom to top searching for the first row
+    of object pixels that does not contain robot pixels below. After finding the row of
+    interest, the algorithm calculates the angle from the robot to the object [-180, 180]
+    (0 being front, -90 being left, 90 being right). Only largest interval of object pixels
+    in the row is used to calculate the angle.
+    '''
+    return colorDirectionScan(color=objectColor, rowRange=range(IMAGE_MAX_ROW, -1, -1), checkFree=True)
+
+
+def directionToObject():
+    '''
+    Direction to object algorithm
+
+    Return: found, direction
+    found -> If found the object
+    direction -> Estimated object direction
+
+    The algorithm will scan the image from top to bottom searching the first row
+    with object pixels. The average object pixel position in that row is converted
+    to direction angle and is returned
+    '''
+    found, direction, _ = colorDirectionScan(color=objectColor, rowRange=range(IMAGE_SIZE), checkFree=False)
+    return found, direction
 
 def distanceToObject():
     '''
@@ -261,43 +300,69 @@ def approachObject():
     minDist = 5# Minimum distance to the object to change state
     minAngle = 10# The front angle interval is [-minAngle, minAngle]
 
-    isFree, direction = freeDirectionToObject()
+    isVisible, direction = directionToObject()
     isInFront = direction < minAngle and direction > -minAngle
 
     # Move towards the object
-    if isFree:
+    if isVisible:
         if isInFront:
             moveForward()
         elif direction < -minAngle:
-            moveSlightRight()
+            turnRight()
         else:
-            moveSlightLeft()
+            turnLeft()
     else:
         # Could not see object, search object
         changeState(State.SEARCH_OBJECT)
 
     # Check if arrived
-    if distanceToObject() < minDist and isInFront:
+    dist = distanceToObject()
+    print(f'dir: {direction} dist: {dist}')
+    if dist < minDist and isInFront:
         # Close enough to object and is looking straight at it
         changeState(State.MOVE_AROUND_OBJECT)
 
-wallDist = 15
 def moveAroundObject():
-    dist = 0.05
-    # Left-hand-wall-following behavior
-    # TODO set maximum time rotating
-    pass
+    #----- Parameters -----#
+    distMin = 200
+    distMax = IR_SENSOR_LIMIT
+    distToObject = distanceToObject()
+    visible, dirToObject = directionToObject()
 
-    #if irs[7].getValue() > wallDist:
-    #    # Rotate left
-    #    leftMotor.setVelocity(-0.5*MAX_SPEED)
-    #    rightMotor.setVelocity(0.5*MAX_SPEED)
-    #else:
-    #    leftMotor.setVelocity(0.5*MAX_SPEED)
-    #    rightMotor.setVelocity(0.5*MAX_SPEED)
+    #----- Check visible -----#
+    if not visible:
+        changeState(State.SEARCH_OBJECT)
+
+    #----- Read sensor -----#
+    irFront = irs[0].getValue()
+    irLeft = irs[7].getValue()
+    # Deal with wrong measurements when too close
+    #if irFront >= IR_SENSOR_LIMIT and distToObject == 0 and :
+    #    irFront = 0
+    #if irLeft >= IR_SENSOR_LIMIT and distToObject == 0:
+    #    irLeft = 0
+
+    #----- Left hand wall following behavior -----#
+    print(f'L:{irLeft} F:{irFront}')
+    if (irFront < distMax):
+        print("Front can see, turn right")
+        turnRight(-0.5)
+    elif irLeft < distMin:
+        print("Too close, turn right")
+        turnRight(-0.5)
+    elif irLeft >= distMax:
+        print("Left can't see, turn left")
+        turnLeft(-0.5)
+    else:
+        moveForward(0.5)
+    #elif ir <= distMin:
+    #    # Too close, Move backward while rotating to the right
+    #    print("Close")
+    #    #leftMotor.setVelocity(-0.5*MAX_SPEED)
+    #    #rightMotor.setVelocity(-MAX_SPEED)
 
 def pushObject():
-    isFree, direction = freeDirectionToObject()
+    isFree, direction, _ = freeDirectionToObject()
     if isFree:
         if direction < 10 and direction > -10:
             moveForward()

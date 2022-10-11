@@ -5,8 +5,8 @@ import numpy as np
 import random
 
 # Global definitions
-TIME_STEP = 32
-MAX_SPEED = 6.28
+TIME_STEP = 128
+MAX_SPEED = 62.8
 IMAGE_SIZE = 32
 IR_SENSOR_LIMIT = 950.0
 ROBOT_RADIUS = 0.02
@@ -85,29 +85,7 @@ def init():
     leftMotor.setVelocity(0.0)
     rightMotor.setVelocity(0.0)
 
-
 ######### MOVEMENT CONTROLLERS ###########
-def moveForward(power=1.0):
-    leftMotor.setVelocity(MAX_SPEED*power)
-    rightMotor.setVelocity(MAX_SPEED*power)
-
-def moveSlightLeft():
-    leftMotor.setVelocity(MAX_SPEED*0.5)
-    rightMotor.setVelocity(MAX_SPEED*1)
-
-def moveSlightRight():
-    leftMotor.setVelocity(MAX_SPEED*1)
-    rightMotor.setVelocity(MAX_SPEED*0.5)
-
-def turnRight(power=1.0):
-    leftMotor.setVelocity(MAX_SPEED*power)
-    rightMotor.setVelocity(-MAX_SPEED*power)
-
-def turnLeft(power=1.0):
-    leftMotor.setVelocity(-MAX_SPEED*power)
-    rightMotor.setVelocity(MAX_SPEED*power)
-
-######### VECTOR CONTROLLERS ###########
 def dirToVec(direction):
     '''
     Given the direction, convert to vector.
@@ -131,18 +109,17 @@ def vecToMotor(moveVector):
         ang = math.atan2(moveVector[0], moveVector[1])
     else:
         ang = math.atan2(-moveVector[0], moveVector[1])
-    #print(moveVec)
-    #print(norm)
-    #print(ang)
 
     # Calculate power
     power = np.array([math.cos(ang) - math.sin(ang), math.cos(ang) + math.sin(ang)])
     power *= norm
+
     # Normalize power
     if power[0] > 1.0:
         power /= power[0]
     if power[1] > 1.0:
         power /= power[1]
+
     # Apply power
     leftMotor.setVelocity(MAX_SPEED*power[0])
     rightMotor.setVelocity(MAX_SPEED*power[1])
@@ -408,8 +385,14 @@ def moveAroundObject():
 
 def pushObject():
     isFree, direction, _ = freeDirectionToObject()
+    dist = distanceToObject()
     if isFree:
-        vecToMotor(dirToVec(direction))
+        if dist == 0:
+            # If pushing the object, push slowly
+            vecToMotor(dirToVec(direction)*0.05)
+        else:
+            # If approaching the object, move fast
+            vecToMotor(dirToVec(direction))
     else:
         changeState(State.SEARCH_OBJECT)
 

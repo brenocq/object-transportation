@@ -6,14 +6,15 @@ import json
 import csv
 import matplotlib.pyplot as plt
 import pandas as pd
+import math
 
 ########## GLOBAL VARIABLES ##########
-TIME_STEP = 128 # Record positions every 128ms
+TIME_STEP = 256 # Record positions every 128ms
 NUM_ROBOTS = 1 # Number of robots to spawn
 
-ARENA_SIZE = 0.4
+ARENA_SIZE = 1.5
 ROBOT_RADIUS = 0.02
-MIN_BOX_GOAL_DIST = 0.13
+MIN_BOX_GOAL_DIST = 0# Set in main from box/goal sizes
 
 sup = Supervisor()
 
@@ -26,8 +27,8 @@ def spawnRobots(NUM_ROBOTS):
     goalRadius = sup.getFromDef('GOAL_GEOMETRY').getField('radius').getSFFloat()
     boxPos = sup.getFromDef('BOX').getField('translation').getSFVec3f()
     boxSize = sup.getFromDef('BOX_GEOMETRY').getField('size').getSFVec3f()
-    wallPos = sup.getFromDef('WALL').getField('translation').getSFVec3f()
-    wallSize = sup.getFromDef('WALL').getField('size').getSFVec3f()
+    #wallPos = sup.getFromDef('WALL').getField('translation').getSFVec3f()
+    #wallSize = sup.getFromDef('WALL').getField('size').getSFVec3f()
 
     robotsPos = []
 
@@ -52,13 +53,13 @@ def spawnRobots(NUM_ROBOTS):
                 freePosition = False
                 continue
             # check wall collison
-            wallPos_x_max = wallPos[0] + wallSize[0] + 0.3
-            wallPos_x_min = wallPos[0] - wallSize[0] - 0.3 # the wall is so narrow that they still spawn into it
-            wallPos_y_max = wallPos[1] + wallSize[1]/1.9
-            wallPos_y_min = wallPos[1] - wallSize[1]/1.9
+            #wallPos_x_max = wallPos[0] + wallSize[0] + 0.3
+            #wallPos_x_min = wallPos[0] - wallSize[0] - 0.3 # the wall is so narrow that they still spawn into it
+            #wallPos_y_max = wallPos[1] + wallSize[1]/1.9
+            #wallPos_y_min = wallPos[1] - wallSize[1]/1.9
 
-            if (wallPos_x_min < robotPos[0] - ROBOT_RADIUS - gap and wallPos_x_max > robotPos[0] + ROBOT_RADIUS + gap) or (wallPos_y_min < robotPos[1] - ROBOT_RADIUS - gap and wallPos_y_max > robotPos[1] + ROBOT_RADIUS + gap):
-                freePosiition = False
+            #if (wallPos_x_min < robotPos[0] - ROBOT_RADIUS - gap and wallPos_x_max > robotPos[0] + ROBOT_RADIUS + gap) or (wallPos_y_min < robotPos[1] - ROBOT_RADIUS - gap and wallPos_y_max > robotPos[1] + ROBOT_RADIUS + gap):
+            #    freePosiition = False
 
             # Check robot collision
             for otherPos in robotsPos:
@@ -115,6 +116,16 @@ def saveRecordingPlots(filename,recording):
             path["y"].append(pos[1])
         boxPaths.append(path)
 
+    # Plot config
+    figSize = 5
+    localToPlt = figSize * 0.4 * 72  # 1 point = dpi / 72 pixels
+    plt.figure(figsize=[figSize, figSize])
+    ax = plt.axes([0.1, 0.1, 0.8, 0.8], xlim=(-1, 1), ylim=(-1, 1))
+
+    # Plot MIN_BOX_GOAL_DIST
+    pointSize = (2.0 * MIN_BOX_GOAL_DIST * localToPlt)**2
+    plt.scatter(initialGoalPos[0], initialGoalPos[1], s=pointSize, facecolors='none', edgecolors='k', linestyle='--')
+
     # Plot initial and goal positions
     plt.scatter(initialBoxPos[0], initialBoxPos[1], s=30, color='r')
     plt.scatter(initialGoalPos[0], initialGoalPos[1], s=50, color='g')
@@ -127,6 +138,7 @@ def saveRecordingPlots(filename,recording):
     plt.savefig(filename)
 
 def main():
+    global MIN_BOX_GOAL_DIST
     currRepetitionTime = 0.0 # Current repetition time
 
     # Report config
@@ -135,9 +147,9 @@ def main():
     #maxRepetitionTime = 10.0 # Timeout in seconds
 
     # Testing config
-    numberRobotsPerTrial = [1]
-    numRepetitions = 3
-    maxRepetitionTime = 120.0
+    numberRobotsPerTrial = [20]
+    numRepetitions = 1
+    maxRepetitionTime = 360.0
 
     recording = {"config": {}, "repetitions": []} # Recorded data
     recording['config']['numRobots'] = numberRobotsPerTrial
@@ -148,6 +160,11 @@ def main():
     recording['config']['initalBoxPosition'] = sup.getFromDef('BOX').getField('translation').getSFVec3f()
     initialGoalRotation = sup.getFromDef('GOAL').getField('rotation').getSFRotation()
     initialBoxRotation = sup.getFromDef('GOAL').getField('rotation').getSFRotation()
+
+    # Set from goal/box size
+    goalRadius = sup.getFromDef('GOAL_GEOMETRY').getField('radius').getSFFloat()
+    boxSize = sup.getFromDef('BOX_GEOMETRY').getField('size').getSFVec3f()
+    MIN_BOX_GOAL_DIST = boxSize[0]*math.sqrt(2.0)*0.5+goalRadius
 
     timings = []
     header = ['NumRobots', 'NewImplementation', 'Success', 'Duration']

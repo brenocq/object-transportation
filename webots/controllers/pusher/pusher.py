@@ -6,7 +6,7 @@ import random
 
 # Global definitions
 TIME_STEP = 128
-MAX_SPEED = 62.8
+MAX_SPEED = 10
 IMAGE_SIZE = 32
 IR_SENSOR_LIMIT = 950.0
 ROBOT_RADIUS = 0.02
@@ -121,8 +121,18 @@ def vecToMotor(moveVector):
         power /= power[1]
 
     # Apply power
-    leftMotor.setVelocity(MAX_SPEED*power[0])
-    rightMotor.setVelocity(MAX_SPEED*power[1])
+    leftMotor_speed = MAX_SPEED*power[0]
+    rightMotor_speed = MAX_SPEED*power[1]
+    # scale speeds if exceeding MAX_SPEED or -1*MAXSPEED
+    if leftMotor_speed > MAX_SPEED or leftMotor_speed < -1*MAX_SPEED:
+        rightMotor_speed = rightMotor_speed/abs(leftMotor_speed) * MAX_SPEED
+        leftMotor_speed = leftMotor_speed/abs(leftMotor_speed) * MAX_SPEED
+    if rightMotor_speed > MAX_SPEED or rightMotor_speed < -1*MAX_SPEED:
+        leftMotor_speed = leftMotor_speed/abs(rightMotor_speed) * MAX_SPEED
+        rightMotor_speed = rightMotor_speed/abs(rightMotor_speed) * MAX_SPEED
+
+    leftMotor.setVelocity(leftMotor_speed)
+    rightMotor.setVelocity(rightMotor_speed)
 vecToMotor.moveForward = 1
 vecToMotor.swapTime = 512
 
@@ -340,7 +350,7 @@ def approachObject():
 def moveAroundObject():
     #----- Check goal visible -----#
     if worldTime % 2048 == 0:
-        # Check every 2 seconds if shuold push the object
+        # Check every 2 seconds if should push the object
         if not canSeeGoal():
             changeState(State.PUSH_OBJECT)
 
@@ -389,15 +399,15 @@ def pushObject():
     if isFree:
         if dist == 0:
             # If pushing the object, push slowly
-            vecToMotor(dirToVec(direction)*0.05)
+            vecToMotor(dirToVec(direction)*0.3)
         else:
             # If approaching the object, move fast
             vecToMotor(dirToVec(direction))
     else:
-        changeState(State.SEARCH_OBJECT)
+        changeState(State.MOVE_AROUND)
 
     if worldTime % 2048 == 0:
-        # Check every 2 seconds if shuold move around the object
+        # Check every 2 seconds if should move around the object
         if canSeeGoal():
             changeState(State.MOVE_AROUND_OBJECT)
 

@@ -11,8 +11,8 @@ import math
 ########## GLOBAL VARIABLES ##########
 TIME_STEP = 256 # Record positions every 128ms
 NUM_ROBOTS = 1 # Number of robots to spawn
-
-ARENA_SIZE = 1.5
+ARENA_SIZE = 2
+WALL_THICKNESS = 0.01
 ROBOT_RADIUS = 0.02
 MIN_BOX_GOAL_DIST = 0# Set in main from box/goal sizes
 
@@ -37,7 +37,8 @@ def spawnRobots(NUM_ROBOTS):
         freePosition = False
         while not freePosition:
             freePosition = True
-            robotPos = [ random.uniform(-ARENA_SIZE, ARENA_SIZE), random.uniform(-ARENA_SIZE, ARENA_SIZE) ]
+            min_arena_size, max_arena_size = -1*ARENA_SIZE/2 + ROBOT_RADIUS + WALL_THICKNESS, ARENA_SIZE/2 - ROBOT_RADIUS - WALL_THICKNESS
+            robotPos = [ random.uniform(min_arena_size, max_arena_size), random.uniform(min_arena_size, max_arena_size) ]
 
             # Check goal collision
             dx = robotPos[0] - goalPos[0]
@@ -59,7 +60,7 @@ def spawnRobots(NUM_ROBOTS):
             #wallPos_y_min = wallPos[1] - wallSize[1]/1.9
 
             #if (wallPos_x_min < robotPos[0] - ROBOT_RADIUS - gap and wallPos_x_max > robotPos[0] + ROBOT_RADIUS + gap) or (wallPos_y_min < robotPos[1] - ROBOT_RADIUS - gap and wallPos_y_max > robotPos[1] + ROBOT_RADIUS + gap):
-            #    freePosiition = False
+            #    freePosition = False
 
             # Check robot collision
             for otherPos in robotsPos:
@@ -147,7 +148,7 @@ def main():
     #maxRepetitionTime = 10.0 # Timeout in seconds
 
     # Testing config
-    numberRobotsPerTrial = [20]
+    numberRobotsPerTrial = [8]
     numRepetitions = 1
     maxRepetitionTime = 360.0
 

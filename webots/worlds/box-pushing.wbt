@@ -10,8 +10,8 @@ WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.2477723646320384 0.10296022602772967 0.9633317430568595 2.344750434763411
-  position 2.9532247013093778 -3.2551758181527846 2.3087107245570047
+  orientation -0.5232892482819521 0.2322844375909244 0.8198855424299037 2.4268673271983037
+  position 1.2791002283313522 -1.487008551513594 3.4698736075282226
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -24,7 +24,7 @@ TexturedBackgroundLight {
 }
 RectangleArena {
   rotation 0 1 0 0
-  floorSize 3 3
+  floorSize 2 3
   floorTileSize 5 5
   floorAppearance Parquetry {
     type "light strip"
@@ -32,7 +32,7 @@ RectangleArena {
   wallHeight 0.05
 }
 DEF GOAL Solid {
-  translation -0.14846 0.23082 0.05
+  translation -0.3 0.7 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -52,7 +52,7 @@ DEF GOAL Solid {
   }
 }
 DEF BOX Solid {
-  translation 0.55 -0.8 0.05
+  translation 0.3 -0.8 0.1
   children [
     Shape {
       appearance PBRAppearance {
@@ -61,7 +61,7 @@ DEF BOX Solid {
         metalness 0
       }
       geometry DEF BOX_GEOMETRY Box {
-        size 0.5 0.5 0.1
+        size 0.4 0.4 0.08
       }
     }
   ]
@@ -69,7 +69,7 @@ DEF BOX Solid {
   boundingObject USE BOX_GEOMETRY
   physics Physics {
     density -1
-    mass 1
+    mass 3
     damping Damping {
       linear 0.99
       angular 0.99

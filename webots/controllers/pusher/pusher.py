@@ -1,8 +1,10 @@
-from controller import Robot, Camera, DistanceSensor, Motor
+from controller import Robot, Camera, DistanceSensor, Motor, Emitter
 from enum import Enum
 import math
 import numpy as np
 import random
+import struct
+
 
 # Global definitions
 TIME_STEP = 128
@@ -28,7 +30,6 @@ class State(Enum):
     BE_A_GOAL = 5
 state = State.SEARCH_OBJECT
 worldTime = 0
-
 def changeState(newState):
     global state
     print(f'Changed to state "{newState}"')
@@ -59,6 +60,7 @@ robotColor = Color(0, 60, 0, 60, 110, 255)
 robot = Robot()
 irs = []# Infrared devices
 cams = []# Camera devices
+emitter = robot.getDevice('emitter') # emitter
 leftMotor = robot.getDevice('leftMotor')
 rightMotor = robot.getDevice('rightMotor')
 
@@ -78,7 +80,7 @@ def init():
     for i in range(4):
         cams.append(robot.getDevice('cam'+str(i)))
         cams[i].enable(TIME_STEP)
-
+    
     # Initialize motors
     leftMotor.setPosition(float('inf'))
     rightMotor.setPosition(float('inf'))
@@ -305,6 +307,30 @@ def distanceToObject():
                     return y
     return IMAGE_SIZE
 
+
+
+def sendMessagetoController(color):
+    Name = robot.getName()
+    # get the # of the robot from its name
+    if Name == 'pusher': # for some reason pusher #0 just has this name, the 0 doesn't show
+        id = 0
+    else:
+        id = int(Name[Name.find("(")+1:Name.find(")")])
+    
+    if color == 'green':
+        color_string = b'G'
+    elif color == 'blue':
+        color_string = b'B'
+    else:
+        print('invalid color input')
+        return
+    
+    # send the number, and the colour we want to be
+    # pack and send the message (we have to use pack to convert it to C...)
+    message = struct.pack('I 1s',id, color_string)
+    emitter.send(message)
+
+
 ########## STATES ##########
 def searchObject():
     global counter, RW_turning, turnTimer
@@ -313,7 +339,9 @@ def searchObject():
         or (irs[1].getValue() < wallDistParam)     \
         or (irs[7].getValue() < wallDistParam)
 
-    if canSeeObject():
+    if canSeeObject() and canSeeGoal():
+        changeState(State.BE_A_GOAL)
+    elif canSeeObject():
         changeState(State.APPROACH_OBJECT)
     elif not nearWall and not RW_turning:
         counter = 0
@@ -393,13 +421,14 @@ def moveAroundObject():
     #----- Output - move -----#
     vecToMotor(moveVec)
 
+
 def pushObject():
     isFree, direction, _ = freeDirectionToObject()
     dist = distanceToObject()
     if isFree:
         if dist == 0:
             # If pushing the object, push slowly
-            vecToMotor(dirToVec(direction)*0.3)
+            vecToMotor(dirToVec(direction)*0.5)
         else:
             # If approaching the object, move fast
             vecToMotor(dirToVec(direction))
@@ -412,8 +441,14 @@ def pushObject():
             changeState(State.MOVE_AROUND_OBJECT)
 
 def beAGoal():
-    #print('Be a goal')
-    pass
+    # placeholder behaviour, needs an exit condition!
+    leftMotor.setVelocity(0)
+    rightMotor.setVelocity(0)        # just for use to see that its hit this state
+    sendMessagetoController('green')
+    
+
+
+
 
 def main():
     global worldTime

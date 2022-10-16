@@ -1,4 +1,4 @@
-from controller import Supervisor
+from controller import Supervisor, Receiver, Emitter
 import random
 from math import sqrt, pi
 import datetime
@@ -7,9 +7,10 @@ import csv
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
+import struct
 
 ########## GLOBAL VARIABLES ##########
-TIME_STEP = 256 # Record positions every 128ms
+TIME_STEP = 128 # Record positions every 128ms
 NUM_ROBOTS = 1 # Number of robots to spawn
 ARENA_SIZE = 2
 WALL_THICKNESS = 0.01
@@ -17,6 +18,10 @@ ROBOT_RADIUS = 0.02
 MIN_BOX_GOAL_DIST = 0# Set in main from box/goal sizes
 
 sup = Supervisor()
+
+# get the message reciever
+receiver = sup.getDevice('receiver')
+receiver.enable(TIME_STEP)
 
 def spawnRobots(NUM_ROBOTS):
     '''
@@ -138,9 +143,35 @@ def saveRecordingPlots(filename,recording):
     plt.title('Paths of the object centroid')
     plt.savefig(filename)
 
+
+def changeRobotColor():
+    # the message is the number of the robot, and a string (B or G) which is what colour to be
+    msg = receiver.getData() # read the message at the head of the receiver queue
+    msg =struct.unpack("I 1s",msg) # unpack the first element of the mssage
+    num = msg[0]
+    color = msg[1]
+    print('PUSHER'+str(num), 'COLOUR=', color)
+    
+    # get the pusher and the color field
+    pusher = sup.getFromDef('PUSHER'+str(num))
+    color_field = pusher.getField("color")
+
+    # change the color of the robot
+    if color == b"G":
+        #print('green!')
+        color_field.setSFColor([0, 1, 0])
+    elif color == b"B":
+        #print('blue!')    
+        color_field.setSFColor([0, 0, 1])
+        
+    receiver.nextPacket() # remove the message at the head of the queue
+
 def main():
     global MIN_BOX_GOAL_DIST
     currRepetitionTime = 0.0 # Current repetition time
+
+    
+
 
     # Report config
     #numberRobotsPerTrial = [1, 3, 5, 10]
@@ -192,6 +223,13 @@ def main():
             dy = goalPos[1] - boxPos[1]
 
             #print('distance = ', sqrt(dx*dx + dy*dy))
+            
+            # check for messages from pushers wanting to change colour
+            while receiver.getQueueLength() > 0:
+                
+                changeRobotColor()
+                
+                    
 
             if sqrt(dx*dx + dy*dy) <= MIN_BOX_GOAL_DIST or currRepetitionTime >= maxRepetitionTime:
                 # Add repetition data to recording

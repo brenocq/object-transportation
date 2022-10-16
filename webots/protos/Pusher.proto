@@ -3,6 +3,7 @@ PROTO Pusher [
   field SFVec3f    translation  0 0 0.016
   field SFRotation rotation     0 0 1 0
   field SFFloat    bodyMass     1
+  field SFColor    color        0 0 1
 ]
 {
   Robot {
@@ -84,9 +85,17 @@ PROTO Pusher [
         height 32
         near 0.001
       }
+      Emitter {
+        type "radio"
+        range -1
+        maxRange -1
+        aperture -1
+        channel -1
+        name "emitter"
+      }
       DEF PusherBody Shape {
         appearance PBRAppearance {
-          baseColor 0.0 0.0 1.0
+          baseColor IS color
           roughness 1
           metalness 0
         }

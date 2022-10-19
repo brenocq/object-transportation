@@ -15,12 +15,12 @@ NUM_ROBOTS = 1 # Number of robots to spawn
 ARENA_SIZE = 2
 WALL_THICKNESS = 0.01
 ROBOT_RADIUS = 0.02
-MIN_BOX_GOAL_DIST = 0# Set in main from box/goal sizes
+MIN_BOX_GOAL_DIST = 0 # Set in main from box/goal sizes
 
 sup = Supervisor()
 
 # get the message reciever
-receiver = sup.getDevice('receiver')
+receiver = sup.getDevice('radio receiver')
 receiver.enable(TIME_STEP)
 
 def spawnRobots(NUM_ROBOTS):
@@ -170,8 +170,6 @@ def main():
     global MIN_BOX_GOAL_DIST
     currRepetitionTime = 0.0 # Current repetition time
 
-    
-
 
     # Report config
     #numberRobotsPerTrial = [1, 3, 5, 10]
@@ -179,7 +177,7 @@ def main():
     #maxRepetitionTime = 10.0 # Timeout in seconds
 
     # Testing config
-    numberRobotsPerTrial = [8]
+    numberRobotsPerTrial = [5]
     numRepetitions = 1
     maxRepetitionTime = 360.0
 
@@ -223,10 +221,8 @@ def main():
             dy = goalPos[1] - boxPos[1]
 
             #print('distance = ', sqrt(dx*dx + dy*dy))
-            
             # check for messages from pushers wanting to change colour
             while receiver.getQueueLength() > 0:
-                
                 changeRobotColor()
                 
                     

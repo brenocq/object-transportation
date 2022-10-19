@@ -90,8 +90,18 @@ PROTO Pusher [
         range -1
         maxRange -1
         aperture -1
-        channel -1
-        name "emitter"
+        name "radio emitter"
+      }
+      Emitter {
+        type "infra-red"
+        range -1
+        maxRange -1
+        aperture -1
+        name "IR emitter"
+      }
+      Receiver{
+        type "infra-red"
+        name "IR receiver"
       }
       DEF PusherBody Shape {
         appearance PBRAppearance {

@@ -5,13 +5,14 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
 IMPORTABLE EXTERNPROTO "../protos/Pusher.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/apartment_structure/protos/Wall.proto"
 
 WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.5232892482819521 0.2322844375909244 0.8198855424299037 2.4268673271983037
-  position 1.2791002283313522 -1.487008551513594 3.4698736075282226
+  orientation -0.46366090462791587 -0.018821486830459214 0.8858128002874612 3.194755654262928
+  position 3.5158536758993724 0.3153459350256141 5.210589279809478
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -24,7 +25,7 @@ TexturedBackgroundLight {
 }
 RectangleArena {
   rotation 0 1 0 0
-  floorSize 2 3
+  floorSize 2 2
   floorTileSize 5 5
   floorAppearance Parquetry {
     type "light strip"
@@ -32,7 +33,7 @@ RectangleArena {
   wallHeight 0.05
 }
 DEF GOAL Solid {
-  translation -0.3 0.7 0.05
+  translation -0.81 -0.63 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -52,7 +53,8 @@ DEF GOAL Solid {
   }
 }
 DEF BOX Solid {
-  translation 0.3 -0.8 0.1
+  translation -0.26 0.4 0.05
+  scale 0.7 0.7 0.7
   children [
     Shape {
       appearance PBRAppearance {
@@ -61,7 +63,7 @@ DEF BOX Solid {
         metalness 0
       }
       geometry DEF BOX_GEOMETRY Box {
-        size 0.4 0.4 0.08
+        size 0.4 0.4 0.2
       }
     }
   ]
@@ -69,7 +71,7 @@ DEF BOX Solid {
   boundingObject USE BOX_GEOMETRY
   physics Physics {
     density -1
-    mass 3
+    mass 2.5
     damping Damping {
       linear 0.99
       angular 0.99
@@ -79,13 +81,17 @@ DEF BOX Solid {
 Robot {
   children [
     Receiver {
-    name "receiver"
+      name "radio receiver"
     }
     Emitter {
-    name "emitter"
+      channel 1
     }
   ]
   name "supervisor"
   controller "supervisor"
   supervisor TRUE
+}
+Wall {
+  translation -0.33 -0.16 0
+  size 1.4 0.05 0.1
 }

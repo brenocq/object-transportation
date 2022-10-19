@@ -1,4 +1,4 @@
-from controller import Robot, Camera, DistanceSensor, Motor, Emitter, Receiver
+from controller import Robot, Camera, DistanceSensor, Motor, Emitter
 from enum import Enum
 import math
 import numpy as np
@@ -60,19 +60,14 @@ robotColor = Color(0, 60, 0, 60, 110, 255)
 robot = Robot()
 irs = []# Infrared devices
 cams = []# Camera devices
-radioEmitter = robot.getDevice('radio emitter') # emitter
-IREmitter = robot.getDevice('IR emitter')       # emitter
-IRReceiver = robot.getDevice('IR receiver')
-IRReceiver.enable(TIME_STEP)
+emitter = robot.getDevice('emitter') # emitter
 leftMotor = robot.getDevice('leftMotor')
 rightMotor = robot.getDevice('rightMotor')
 
 # Auxiliary
 counter = 0
 RW_turning = False  # helps manage the random walk, for when it reaches a wall
-turnTimer = random.randint(5, 15) # the amount of timesteps to turn in randomWalk
-goalIsVisible = False
-goalWasVisible = False
+turnTimer = random.randint(30, 100) # the amount of timesteps to turn in randomWalk
 
 ########## INITIALIZE ##########
 def init():
@@ -146,22 +141,8 @@ vecToMotor.swapTime = 512
 ########## SENSING ##########
 def canSeeObject():
     return cameraCheckColor(objectColor)
-    
-    
 def canSeeGoal():
-    isVisible = False
-    if IRReceiver.getQueueLength() > 0:
-        while IRReceiver.getQueueLength() > 0:
-            # the message is the number of the robot, and a string (B or G) which is what colour to be
-            msg = IRReceiver.getData() # read the message at the head of the receiver queue
-            msg =struct.unpack("3s",msg) # unpack the first element of the mssage
-            if msg == 'IAG':
-                isVisible = True
-            IRReceiver.nextPacket()
-    if isVisible == False:
-        isVisible = cameraCheckColor(goalColor)
-    return isVisible
-    
+    return cameraCheckColor(goalColor)
 def cameraCheckColor(color):
     for y in range(IMAGE_MAX_ROW, -1, -1):# From IMAGE_MAX_ROW to 0
         for i in range(4):
@@ -347,47 +328,21 @@ def sendMessagetoController(color):
     # send the number, and the colour we want to be
     # pack and send the message (we have to use pack to convert it to C...)
     message = struct.pack('I 1s',id, color_string)
-    radioEmitter.send(message)
+    emitter.send(message)
 
 
-def sendIRMessage(message):
-    if message == 'changeToGoal':
-        color_string = b'CTG'
-    elif message == 'iAmGoal':
-        color_string = b'IAG'
-    else:
-        print('invalid message input')
-        return
-    
-    # send the number, and the colour we want to be
-    # pack and send the message (we have to use pack to convert it to C...)
-    message = struct.pack('3s',color_string)
-    IREmitter.send(message)
-
-
-############################
 ########## STATES ##########
-############################
-
 def searchObject():
-    global counter, RW_turning, turnTimer, goalWasVisible, goalIsVisible
+    global counter, RW_turning, turnTimer
     wallDistParam = 400
     nearWall = (irs[0].getValue() < wallDistParam) \
         or (irs[1].getValue() < wallDistParam)     \
         or (irs[7].getValue() < wallDistParam)
-    if worldTime % 1024 == 0: # check every 1 second to see if the goal or object is visible
-        if goalWasVisible and not goalIsVisible:
-            changeState(State.BE_A_GOAL)
-            sendMessagetoController('green')
-            sendIRMessage("changeToGoal")
-            return
-        if goalIsVisible:
-            goalWasVisible = True
-        elif canSeeObject():
-            changeState(State.APPROACH_OBJECT)
-        
 
-    # movement controls
+    if canSeeObject() and canSeeGoal():
+        changeState(State.BE_A_GOAL)
+    elif canSeeObject():
+        changeState(State.APPROACH_OBJECT)
     elif not nearWall and not RW_turning:
         counter = 0
         leftMotor.setVelocity(MAX_SPEED)
@@ -400,11 +355,10 @@ def searchObject():
             counter += 1
         else:
             RW_turning = False
-            turnTimer = random.randint(5, 15)
+            turnTimer = random.randint(30, 100)
 
 def approachObject():
-    global worldTime, goalIsVisible
-    minDist = 10 # Minimum distance to the object to change state
+    minDist = 5# Minimum distance to the object to change state
     minAngle = 10# The front angle interval is [-minAngle, minAngle]
 
     isVisible, direction = directionToObject()
@@ -421,104 +375,87 @@ def approachObject():
         # Close enough to object and is looking straight at it
         changeState(State.MOVE_AROUND_OBJECT)
 
-
 def moveAroundObject():
-    global worldTime, goalIsVisible
-    
+    #----- Check goal visible -----#
+    if worldTime % 2048 == 0:
+        # Check every 2 seconds if should push the object
+        if not canSeeGoal():
+            changeState(State.PUSH_OBJECT)
+
+    #----- Parameters -----#
+    moveVec = np.array([0, 1]) # Robot move vector (X is to the right, Y is forward)
+    minDist = 300
+
     #----- Input -----#
-    #distToObject = distanceToObject()  # isn't being used?
-    objectVisible, dirToObject = directionToObject()
-    
+    distToObject = distanceToObject()
+    visible, dirToObject = directionToObject()
+
+    idxF = 0
+    if dirToObject < 0:
+        idxF = 4# If robot moving "backward", front sensor is behind
+
+    irF = irs[idxF].getValue()# IR front
+    irFR = irs[idxF+1].getValue()# IR front-right
+    irR = irs[idxF+2].getValue()# IR right
+
     #----- Check visible -----#
-    if not objectVisible:
+    if not visible:
         changeState(State.SEARCH_OBJECT)
-        
-    # check if goal is  visible every 2 seconds
-    elif worldTime % 2048 == 0 and not goalIsVisible:
-        changeState(State.PUSH_OBJECT)
-           
-    else:     
-        #----- Parameters -----#
-        moveVec = np.array([0, 1]) # Robot move vector (X is to the right, Y is forward)
-        minDist = 300
-    
-        idxF = 0
-        if dirToObject < 0:
-            idxF = 4# If robot moving "backward", front sensor is behind
-    
-        irF = irs[idxF].getValue()# IR front
-        irFR = irs[idxF+1].getValue()# IR front-right
-        irR = irs[idxF+2].getValue()# IR right
- 
-        #----- Force field -----#
-        objVec = dirToVec(dirToObject)
-    
-        # Force to move around the object
-        moveVec = np.array([-objVec[1], objVec[0]])
-    
-        # Force to keep distance from object
-        if irR > IR_SENSOR_LIMIT:
-            moveVec += objVec
-        elif irR < minDist:
-            moveVec += -objVec
-    
-        # Force to deviate from obstacles
-        if irF < minDist:
-            moveVec = np.array([-1,0])
-    
-        #----- Output - move -----#
-        vecToMotor(moveVec)
-    
+
+    #----- Force field -----#
+    objVec = dirToVec(dirToObject)
+
+    # Force to move around the object
+    moveVec = np.array([-objVec[1], objVec[0]])
+
+    # Force to keep distance from object
+    if irR > IR_SENSOR_LIMIT:
+        moveVec += objVec
+    elif irR < minDist:
+        moveVec += -objVec
+
+    # Force to deviate from obstacles
+    if irF < minDist:
+        moveVec = np.array([-1,0])
+
+    #----- Output - move -----#
+    vecToMotor(moveVec)
+
 
 def pushObject():
-    global worldTime, goalIsVisible
-    
-    if not goalIsVisible:
-        isFree, direction, _ = freeDirectionToObject()
-        dist = distanceToObject()
-        if isFree:
-            if dist == 0:
-                # If pushing the object, push slowly
-                vecToMotor(dirToVec(direction)*0.7)
-            else:
-                # If approaching the object, move fast
-                vecToMotor(dirToVec(direction))
+    isFree, direction, _ = freeDirectionToObject()
+    dist = distanceToObject()
+    if isFree:
+        if dist == 0:
+            # If pushing the object, push slowly
+            vecToMotor(dirToVec(direction)*0.5)
         else:
-            changeState(State.MOVE_AROUND_OBJECT)  
-            leftMotor.setVelocity(-MAX_SPEED)
-            rightMotor.setVelocity(-MAX_SPEED)
-                 
-    else: # goal is visible, take a step back and move around the object
-        changeState(State.MOVE_AROUND_OBJECT)
-        leftMotor.setVelocity(-MAX_SPEED)
-        rightMotor.setVelocity(-MAX_SPEED)
+            # If approaching the object, move fast
+            vecToMotor(dirToVec(direction))
+    else:
+        changeState(State.MOVE_AROUND)
 
-    
+    if worldTime % 2048 == 0:
+        # Check every 2 seconds if should move around the object
+        if canSeeGoal():
+            changeState(State.MOVE_AROUND_OBJECT)
 
 def beAGoal():
     # placeholder behaviour, needs an exit condition!
     leftMotor.setVelocity(0)
     rightMotor.setVelocity(0)        # just for use to see that its hit this state
-    sendIRMessage("iAmGoal")
-    
-    # IDEA FOR EXIT CONDITION:
-    if canSeeObject():
-        # something related to the distance
-        distToObject = distanceToObject()
-        if distToObject == 0:
-            changeState(State.MOVE_AROUND_OBJECT)
-            sendMessagetoController('blue')
+    sendMessagetoController('green')
     
 
+
+
+
 def main():
-    global worldTime, goalIsVisible
+    global worldTime
     init()
     print('Robot initialized')
     while robot.step(TIME_STEP) != -1:
         worldTime += TIME_STEP
-        if worldTime % 2048 == 0: # check messages (from goals) every 2 seconds
-            goalIsVisible = canSeeGoal()
-        # states
         if state == State.SEARCH_OBJECT:
             searchObject()
         elif state == State.APPROACH_OBJECT:

@@ -123,6 +123,9 @@ PROTO Pusher [
           RotationalMotor {
             name "leftMotor"
           }
+          PositionSensor {
+          name "leftMotor sensor"
+          }
         ]
         endPoint DEF PusherWheel Solid {
           translation 0.02 0 -0.011
@@ -149,6 +152,9 @@ PROTO Pusher [
         device [
           RotationalMotor {
             name "rightMotor"
+          }
+          PositionSensor {
+          name "rightMotor sensor"
           }
         ]
         endPoint DEF PusherWheel Solid {

@@ -28,6 +28,7 @@ class State(Enum):
     MOVE_AROUND_OBJECT = 3
     PUSH_OBJECT = 4
     BE_A_GOAL = 5
+    TURN_TO_GOAL_ROBOT = 6
 state = State.SEARCH_OBJECT
 worldTime = 0
 def changeState(newState):
@@ -67,13 +68,26 @@ IRReceiver.enable(TIME_STEP)
 leftMotor = robot.getDevice('leftMotor')
 rightMotor = robot.getDevice('rightMotor')
 
+
+# Wheel sensors
+encoder = []
+encoderNames = ['leftMotor sensor', 'rightMotor sensor']
+for i in range(2):
+    encoder.append(robot.getDevice(encoderNames[i]))
+    encoder[i].enable(TIME_STEP)
+
 # Auxiliary
+r = 0.005 # wheel radius
 counter = 0
 RW_turning = False  # helps manage the random walk, for when it reaches a wall
 turnTimer = random.randint(5, 15) # the amount of timesteps to turn in randomWalk
 goalIsVisible = False
 goalWasVisible = False
-
+dirToRobot = 0
+sawRobotTurnGreen = False
+timeStartTurn = 0
+oldEncoderValues = []
+visionCounter = 0
 ########## INITIALIZE ##########
 def init():
     # Initialize infra red sensors
@@ -93,6 +107,32 @@ def init():
     rightMotor.setVelocity(0.0)
 
 ######### MOVEMENT CONTROLLERS ###########
+
+
+def getRotationOverTime(oldEncoderValues, delta_t):
+    """
+    uses the number of times each wheel has rotated to calulate how much the robot's angle has changed
+    wheel rotations (ie. how many rotations they have done) stored in the 'encoders'
+    """
+    
+    r = 0.005 # radius of wheels
+    d = 0.05  # approx distance between wheels
+    # get amount of rotations done
+    encoderValues = []
+    for i in range(2):
+        encoderValues.append(encoder[i].getValue())    # [rad]
+
+    # compute speed of the wheels between these timesteps
+    wl = (encoderValues[0] - oldEncoderValues[0])/delta_t
+    wr = (encoderValues[1] - oldEncoderValues[1])/delta_t
+    
+    # compute angular speed
+    w = r/d * (wr - wl)
+    
+    # compute change in angle over delta_t
+    delta_phi = w * delta_t * (180/math.pi)
+    return delta_phi
+
 def dirToVec(direction):
     '''
     Given the direction, convert to vector.
@@ -149,17 +189,7 @@ def canSeeObject():
     
     
 def canSeeGoal():
-    isVisible = False
-    if IRReceiver.getQueueLength() > 0:
-        while IRReceiver.getQueueLength() > 0:
-            # the message is the number of the robot, and a string (B or G) which is what colour to be
-            msg = IRReceiver.getData() # read the message at the head of the receiver queue
-            msg =struct.unpack("3s",msg) # unpack the first element of the mssage
-            if msg == 'IAG':
-                isVisible = True
-            IRReceiver.nextPacket()
-    if isVisible == False:
-        isVisible = cameraCheckColor(goalColor)
+    isVisible = cameraCheckColor(goalColor)
     return isVisible
     
 def cameraCheckColor(color):
@@ -365,28 +395,76 @@ def sendIRMessage(message):
     IREmitter.send(message)
 
 
-############################
-########## STATES ##########
-############################
+def checkIRMessages():
+    
+    isVisible = False
+    direction = 0
+    message = 0
+    if IRReceiver.getQueueLength() > 0:
+        while IRReceiver.getQueueLength() > 0:
+            # the message is the number of the robot, and a string (B or G) which is what colour to be
+            msg = IRReceiver.getData() # read the message at the head of the receiver queue
+            msg =struct.unpack("3s",msg) # unpack the first element of the mssage
+            msg = msg[0]
+            if msg == b'IAG':
+                isVisible = True
+                direction = IRReceiver.getEmitterDirection()[:2]               
+                direction  = math.atan2(direction[0], direction[1])*180.0/math.pi
+                message = msg
+            elif msg == b'CTG':
+                isVisible = True
+                direction = IRReceiver.getEmitterDirection()[:2]
+                direction  = math.atan2(direction[0], direction[1])*180.0/math.pi
+                message = msg
+                while IRReceiver.getQueueLength() > 0: # get rid of all other messages
+                    IRReceiver.nextPacket()
+                return isVisible, message, direction
+
+                
+            IRReceiver.nextPacket()
+    return isVisible, message, direction
+
+#############################
+########## STATES ###########
+#############################
 
 def searchObject():
-    global counter, RW_turning, turnTimer, goalWasVisible, goalIsVisible
+    global counter, RW_turning, turnTimer, goalWasVisible, goalIsVisible, visionCounter
+    global sawRobotTurnGreen, oldEncoderValues, timeStartTurn, worldTime
     wallDistParam = 400
     nearWall = (irs[0].getValue() < wallDistParam) \
         or (irs[1].getValue() < wallDistParam)     \
         or (irs[7].getValue() < wallDistParam)
+    if sawRobotTurnGreen:
+        changeState(State.TURN_TO_GOAL_ROBOT)
+        timeStartTurn = worldTime
+        oldEncoderValues = []
+        for i in range(2):
+            oldEncoderValues.append(encoder[i].getValue())
+        return
     if worldTime % 1024 == 0: # check every 1 second to see if the goal or object is visible
+        if goalIsVisible:
+            goalWasVisible = True
         if goalWasVisible and not goalIsVisible:
             changeState(State.BE_A_GOAL)
             sendMessagetoController('green')
             sendIRMessage("changeToGoal")
             return
-        if goalIsVisible:
-            goalWasVisible = True
-        elif canSeeObject():
+        # maybe use a counter (another global variable...) and if the goal is
+        # visible for 10 seconds, then change to APPROACH_OBJECT
+        elif visionCounter >= 10:
+            visionCounter = 0
             changeState(State.APPROACH_OBJECT)
+            return
+        SeeObject = canSeeObject()
+        if SeeObject and not goalIsVisible:  # can see just the box
+            visionCounter = 0
+            changeState(State.APPROACH_OBJECT)
+        elif SeeObject and goalIsVisible:  # can see red and gree, add to counter
+            visionCounter += 1
         
-
+    #elif direction != 0:
+    #    pass
     # movement controls
     elif not nearWall and not RW_turning:
         counter = 0
@@ -401,6 +479,21 @@ def searchObject():
         else:
             RW_turning = False
             turnTimer = random.randint(5, 15)
+
+
+def turnToGoalRobot():
+    global dirToRobot, worldTime, sawRobotTurnGreen, oldEncoderValues
+        
+    elapsedTime = worldTime - timeStartTurn
+    turned = getRotationOverTime(oldEncoderValues, timeStartTurn)
+    delta_phi = (dirToRobot - turned)
+    
+    if abs(delta_phi) > 1:
+        vecToMotor(dirToVec(delta_phi))
+    else:    
+        changeState(State.SEARCH_OBJECT)
+        sawRobotTurnGreen = False        
+   
 
 def approachObject():
     global worldTime, goalIsVisible
@@ -479,7 +572,7 @@ def pushObject():
         if isFree:
             if dist == 0:
                 # If pushing the object, push slowly
-                vecToMotor(dirToVec(direction)*0.7)
+                vecToMotor(dirToVec(direction)*0.6)
             else:
                 # If approaching the object, move fast
                 vecToMotor(dirToVec(direction))
@@ -510,17 +603,29 @@ def beAGoal():
             sendMessagetoController('blue')
     
 
+
 def main():
-    global worldTime, goalIsVisible
+    global worldTime, goalIsVisible, dirToRobot, sawRobotTurnGreen
     init()
     print('Robot initialized')
-    while robot.step(TIME_STEP) != -1:
+    while robot.step(TIME_STEP) != -1:    
         worldTime += TIME_STEP
+ 
+        # process messages
         if worldTime % 2048 == 0: # check messages (from goals) every 2 seconds
-            goalIsVisible = canSeeGoal()
+            goalIsVisible, msg, dir = checkIRMessages()
+            if msg == b'CTG':
+                # direction to green robot, with some noise (to prevent some collisions)
+                dirToRobot = dir + random.randint(-5, 5) 
+                sawRobotTurnGreen = True
+            elif goalIsVisible == False:  # no messages, check cameras
+                goalIsVisible = canSeeGoal()
+        
         # states
         if state == State.SEARCH_OBJECT:
             searchObject()
+        elif state == State.TURN_TO_GOAL_ROBOT:
+            turnToGoalRobot()
         elif state == State.APPROACH_OBJECT:
             approachObject()
         elif state == State.MOVE_AROUND_OBJECT:

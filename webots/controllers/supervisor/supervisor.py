@@ -177,7 +177,7 @@ def main():
     #maxRepetitionTime = 10.0 # Timeout in seconds
 
     # Testing config
-    numberRobotsPerTrial = [5]
+    numberRobotsPerTrial = [10]
     numRepetitions = 1
     maxRepetitionTime = 360.0
 

@@ -11,8 +11,8 @@ WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.46366090462791587 -0.018821486830459214 0.8858128002874612 3.194755654262928
-  position 3.5158536758993724 0.3153459350256141 5.210589279809478
+  orientation -0.4080986263389909 -0.011527220538843242 0.9128650690911979 3.1718784213602413
+  position 3.4432309631601115 0.16471426353224747 3.985092766946213
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -25,7 +25,7 @@ TexturedBackgroundLight {
 }
 RectangleArena {
   rotation 0 1 0 0
-  floorSize 2 2
+  floorSize 3 3
   floorTileSize 5 5
   floorAppearance Parquetry {
     type "light strip"
@@ -33,7 +33,7 @@ RectangleArena {
   wallHeight 0.05
 }
 DEF GOAL Solid {
-  translation -0.81 -0.63 0.05
+  translation -0.81 -0.91 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -53,7 +53,8 @@ DEF GOAL Solid {
   }
 }
 DEF BOX Solid {
-  translation -0.26 0.4 0.05
+  translation -0.78 0.68 0.05
+  rotation 0 1 0 0
   scale 0.7 0.7 0.7
   children [
     Shape {
@@ -92,6 +93,6 @@ Robot {
   supervisor TRUE
 }
 Wall {
-  translation -0.33 -0.16 0
-  size 1.4 0.05 0.1
+  translation -0.52 -0.16 0
+  size 2 0.01 0.3
 }

@@ -45,9 +45,6 @@ def init():
     global cams
     global leftMotor
     global rightMotor
-    global counter
-    global RW_turning
-    global turnTimer
 
     TIME_STEP = 128
     MAX_SPEED = 10
@@ -78,8 +75,3 @@ def init():
     cams = []# Camera devices
     leftMotor = robot.getDevice('leftMotor')
     rightMotor = robot.getDevice('rightMotor')
-
-    # Auxiliary
-    counter = 0
-    RW_turning = False  # helps manage the random walk, for when it reaches a wall
-    turnTimer = random.randint(30, 100) # the amount of timesteps to turn in randomWalk

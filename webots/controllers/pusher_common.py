@@ -67,6 +67,13 @@ def vecToMotor(moveVector):
 vecToMotor.moveForward = 1
 vecToMotor.swapTime = 512
 
+########## UTILS ##########
+def angleDistance(a0, a1):
+    dist = (a1-a0) if a1 > a0 else (a0-a1)
+    if dist > 180:
+        return dist - 180
+    return dist
+
 ########## SENSING ##########
 def canSeeObject():
     return cameraCheckColor(g.objectColor)
@@ -213,6 +220,19 @@ def directionToObject():
     found, direction, _ = colorDirectionScan(color=g.objectColor, rowRange=range(g.IMAGE_SIZE), checkFree=False)
     return found, direction
 
+def directionToGoal():
+    '''
+    Direction to goal algorithm
+
+    Return: found, direction
+    found -> If found the object
+    direction -> Estimated object direction
+
+    Similar to directionToObject
+    '''
+    found, direction, _ = colorDirectionScan(color=g.goalColor, rowRange=range(g.IMAGE_SIZE), checkFree=False)
+    return found, direction
+
 def distanceToObject():
     '''
     Distance to algorithm
@@ -246,19 +266,22 @@ def searchObject():
 
     if canSeeObject():
         changeState(g.State.APPROACH_OBJECT)
-    elif not nearWall and not g.RW_turning:
-        g.counter = 0
+    elif not nearWall and not searchObject.RW_turning:
+        searchObject.counter = 0
         g.leftMotor.setVelocity(g.MAX_SPEED)
         g.rightMotor.setVelocity(g.MAX_SPEED)
     else:
-        RW_turning = True
-        if counter < turnTimer:
+        searchObject.RW_turning = True
+        if searchObject.counter < searchObject.turnTimer:
             g.leftMotor.setVelocity(-g.MAX_SPEED)
             g.rightMotor.setVelocity(g.MAX_SPEED)
-            g.counter += 1
+            searchObject.counter += g.TIME_STEP
         else:
-            g.RW_turning = False
-            g.turnTimer = random.randint(30, 100)
+            searchObject.RW_turning = False
+            searchObject.turnTimer = random.randint(512, 512*3)
+searchObject.RW_turning = False  # helps manage the random walk, for when it reaches a wall
+searchObject.counter = 0
+searchObject.turnTimer = 0
 
 def approachObject():
     minDist = 5# Minimum distance to the object to change state
@@ -278,13 +301,7 @@ def approachObject():
         # Close enough to object and is looking straight at it
         changeState(g.State.MOVE_AROUND_OBJECT)
 
-def moveAroundObject():
-    #----- Check goal visible -----#
-    if g.worldTime % 2048 == 0:
-        # Check every 2 seconds if should push the object
-        if not canSeeGoal():
-            changeState(g.State.PUSH_OBJECT)
-
+def moveAroundObject(clockwise = True):
     #----- Parameters -----#
     moveVec = np.array([0, 1]) # Robot move vector (X is to the right, Y is forward)
     minDist = 300
@@ -293,29 +310,45 @@ def moveAroundObject():
     distToObject = distanceToObject()
     visible, dirToObject = directionToObject()
 
-    idxF = 0
+    idxF = 0 if clockwise else 4
     if dirToObject < 0:
-        idxF = 4# If robot moving "backward", front sensor is behind
+        # If robot moving "backward", front sensor is behind
+        if idxF == 4:
+            idxF = 0
+        else:
+            idxF = 4
 
     irF = g.irs[idxF].getValue()# IR front
-    irFR = g.irs[idxF+1].getValue()# IR front-right
-    irR = g.irs[idxF+2].getValue()# IR right
+    if clockwise:
+        irS = g.irs[idxF+2].getValue()# IR right
+    else:
+        irS = g.irs[(idxF-2+len(g.irs))%len(g.irs)].getValue()# IR left
 
-    #----- Check visible -----#
+    #----- Check lost object -----#
     if not visible:
         changeState(g.State.SEARCH_OBJECT)
+
+    #----- Check should push -----#
+    if g.worldTime % 1024 == 0:
+        # Check every 2 seconds if should push the object
+        if not canSeeGoal():
+            isFree, dirToFree, _ = freeDirectionToObject()
+            if isFree and angleDistance(dirToFree, dirToObject) < 10:
+                changeState(g.State.PUSH_OBJECT)
 
     #----- Force field -----#
     objVec = dirToVec(dirToObject)
 
     # Force to move around the object
     moveVec = np.array([-objVec[1], objVec[0]])
+    if not clockwise:
+        moveVec *= -1
 
     # Force to keep distance from object
-    if irR > g.IR_SENSOR_LIMIT:
+    if irS > g.IR_SENSOR_LIMIT:
         moveVec += objVec
-    elif irR < minDist:
-        moveVec += -objVec
+    elif irS < minDist:
+        moveVec -= objVec
 
     # Force to deviate from obstacles
     if irF < minDist:
@@ -327,6 +360,7 @@ def moveAroundObject():
 def pushObject():
     isFree, direction, _ = freeDirectionToObject()
     dist = distanceToObject()
+
     if isFree:
         if dist == 0:
             # If pushing the object, push slowly
@@ -335,10 +369,20 @@ def pushObject():
             # If approaching the object, move fast
             vecToMotor(dirToVec(direction))
     else:
+        print(f'No free space')
         changeState(g.State.MOVE_AROUND_OBJECT)
 
-    if g.worldTime % 2048 == 0:
-        # Check every 2 seconds if shuold move around the object
+    # Check every 5 seconds if it is still pushing the box
+    frontError = 10
+    if g.worldTime % (3*1024) == 0:
+        if not ((direction > -frontError and direction < frontError) or \
+         (direction < -180+frontError or direction > 180-frontError)):
+            print(f'Could not push to direction {direction}, another robot was blocking')
+            changeState(g.State.MOVE_AROUND_OBJECT)
+
+    # Check every 2 seconds if should move around the object
+    if g.worldTime % (2*1024) == 0:
         if canSeeGoal():
+            print(f'Can see goal, move around object')
             changeState(g.State.MOVE_AROUND_OBJECT)
 

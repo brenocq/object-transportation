@@ -11,7 +11,7 @@ import struct
 
 ########## GLOBAL VARIABLES ##########
 TIME_STEP = 256 # Record positions every 128ms
-ROBOT_CONTROLLER = "pusher_paper"# Set to "pusher" or "pusher_paper""
+ROBOT_CONTROLLER = "pusher"# Set to "pusher" or "pusher_paper""
 
 ARENA_SIZE = 3.0
 WALL_THICKNESS = 0.01

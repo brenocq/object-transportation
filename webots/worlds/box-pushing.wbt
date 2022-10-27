@@ -10,8 +10,8 @@ WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.2477723646320384 0.10296022602772967 0.9633317430568595 2.344750434763411
-  position 2.9532247013093778 -3.2551758181527846 2.3087107245570047
+  orientation -0.5685126579580386 0.5637934015490956 0.5991079686593949 2.0540574967051763
+  position -0.013196222101809374 -0.23265839395397048 4.959099897055271
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -32,7 +32,7 @@ RectangleArena {
   wallHeight 0.05
 }
 DEF GOAL Solid {
-  translation -0.14846 0.23082 0.05
+  translation -0.91846 1.19082 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -52,7 +52,7 @@ DEF GOAL Solid {
   }
 }
 DEF BOX Solid {
-  translation 0.55 -0.8 0.05
+  translation 1.08 -1.1 0.05
   children [
     Shape {
       appearance PBRAppearance {

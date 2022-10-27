@@ -11,7 +11,7 @@ def approachObject():
     common.approachObject()
 
 def moveAroundObject():
-    common.moveAroundObject()
+    common.moveAroundObject(clockwise = True)
 
 def pushObject():
     common.pushObject()

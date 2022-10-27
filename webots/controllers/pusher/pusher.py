@@ -31,11 +31,37 @@ def approachObject():
     common.approachObject()
 
 def moveAroundObject():
-    common.moveAroundObject()
+    # Choose direction when enter the state for the first time
+    if not moveAroundObject.directionWasChosen:
+        moveAroundObject.directionWasChosen = True
+        goalVisible, dirToGoal = common.directionToGoal()
+        if goalVisible:
+            # Handle dynamic front
+            _, dirToObject = common.directionToObject()
+            shouldInvert = dirToObject < -90 or dirToObject > 90
+
+            # Choose best direction
+            if shouldInvert:
+                dirToGoal += 180
+                if dirToGoal > 180:
+                    dirToGoal -= 360
+
+            if dirToGoal > 0:# If goal to the right
+                moveAroundObject.clockwise = True# Move clockwise
+            else:# If goal to the left
+                moveAroundObject.clockwise = False# Move anti-clockwise
+
+    # Move around object
+    common.moveAroundObject(moveAroundObject.clockwise)
+
+    # Reset direction when leave the state
+    if g.state != g.State.MOVE_AROUND_OBJECT:
+        moveAroundObject.directionWasChosen = False
+moveAroundObject.directionWasChosen = False
+moveAroundObject.clockwise = True
 
 def pushObject():
     common.pushObject()
-    common.changeState(g.State.BE_A_GOAL)
 
 def beAGoal():
     sendMessageToController('green')

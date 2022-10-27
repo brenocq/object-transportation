@@ -1,0 +1,93 @@
+#VRML_SIM R2022b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
+IMPORTABLE EXTERNPROTO "../protos/Pusher.proto"
+
+WorldInfo {
+  basicTimeStep 16
+}
+Viewpoint {
+  orientation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.0944
+  position 5.31966011929193e-05 2.4759725860768995e-06 7.356121128180397
+}
+TexturedBackground {
+  texture "noon_cloudy_mountains"
+  skybox FALSE
+  skyColor [
+    0.3 0.3 0.3
+  ]
+}
+TexturedBackgroundLight {
+}
+RectangleArena {
+  rotation 0 1 0 0
+  floorSize 3 3
+  floorTileSize 5 5
+  floorAppearance Parquetry {
+    type "light strip"
+  }
+  wallThickness 0.02
+}
+DEF GOAL Solid {
+  translation -0.81 -0.91 0.05
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 1
+        metalness 0
+      }
+      geometry DEF GOAL_GEOMETRY Cylinder {
+        height 0.1
+        radius 0.1
+      }
+    }
+  ]
+  name "goal"
+  boundingObject USE GOAL_GEOMETRY
+  physics Physics {
+  }
+}
+DEF BOX Solid {
+  translation 0.5 0.5 0.05
+  rotation 0 1 0 0
+  scale 0.7 0.7 0.7
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 1 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry DEF BOX_GEOMETRY Box {
+        size 0.4 0.4 0.2
+      }
+    }
+  ]
+  name "box"
+  boundingObject USE BOX_GEOMETRY
+  physics Physics {
+    density -1
+    mass 2.5
+    damping Damping {
+      linear 0.99
+      angular 0.99
+    }
+  }
+}
+Robot {
+  children [
+    Receiver {
+      name "radio receiver"
+    }
+    Emitter {
+      channel 1
+    }
+  ]
+  name "supervisor"
+  controller "supervisor"
+  supervisor TRUE
+}

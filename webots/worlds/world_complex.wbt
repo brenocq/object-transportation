@@ -6,13 +6,14 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
 IMPORTABLE EXTERNPROTO "../protos/Pusher.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/apartment_structure/protos/Wall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Roughcast.proto"
 
 WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.4080986263389909 -0.011527220538843242 0.9128650690911979 3.1718784213602413
-  position 3.4432309631601115 0.16471426353224747 3.985092766946213
+  orientation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.0944
+  position 5.973212486697423e-05 9.011514740944556e-06 9.667428571760528
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -25,15 +26,15 @@ TexturedBackgroundLight {
 }
 RectangleArena {
   rotation 0 1 0 0
-  floorSize 3 3
+  floorSize 5 5
   floorTileSize 5 5
   floorAppearance Parquetry {
     type "light strip"
   }
-  wallHeight 0.05
+  wallThickness 0.02
 }
 DEF GOAL Solid {
-  translation -0.81 -0.91 0.05
+  translation -1.6 -1.6 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -53,7 +54,7 @@ DEF GOAL Solid {
   }
 }
 DEF BOX Solid {
-  translation -0.78 0.68 0.05
+  translation 1.5 1.5 0.05
   rotation 0 1 0 0
   scale 0.7 0.7 0.7
   children [
@@ -93,6 +94,17 @@ Robot {
   supervisor TRUE
 }
 Wall {
-  translation -0.52 -0.16 0
-  size 2 0.01 0.3
+  translation -1.15 -0.8 0
+  size 2.6 0.02 0.3
+  appearance Roughcast {
+    colorOverride 0.8 0.8 0.8
+    textureTransform TextureTransform {
+      scale 2.4 1
+    }
+  }
+}
+Wall {
+  translation 1.1 0.7 0
+  name "wall(1)"
+  size 2.7 0.02 0.3
 }

@@ -4,8 +4,8 @@ import pusher_globals as g
 import pusher_common as common
 
 ########## STATES ##########
-def searchObject():
-    common.searchObject()
+def randomWalk():
+    common.randomWalk()
 
 def approachObject():
     common.approachObject()
@@ -23,8 +23,8 @@ def main():
     print('Robot initialized')
     while g.robot.step(g.TIME_STEP) != -1:
         g.worldTime += g.TIME_STEP
-        if g.state == g.State.SEARCH_OBJECT:
-            searchObject()
+        if g.state == g.State.RANDOM_WALK:
+            randomWalk()
         elif g.state == g.State.APPROACH_OBJECT:
             approachObject()
         elif g.state == g.State.MOVE_AROUND_OBJECT:

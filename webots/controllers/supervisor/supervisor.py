@@ -184,9 +184,9 @@ def main():
     #maxRepetitionTime = 10.0 # Timeout in seconds
 
     # Testing config
-    numberRobotsPerTrial = [10]
+    numberRobotsPerTrial = [20]
     numRepetitions = 1
-    maxRepetitionTime = 360.0
+    maxRepetitionTime = 60.0*60.0# Maximum 1h
 
     recording = {"config": {}, "repetitions": []} # Recorded data
     recording['config']['numRobots'] = numberRobotsPerTrial

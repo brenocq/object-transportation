@@ -56,16 +56,16 @@ PROTO Pusher [
         rotation 0 0 1 1.5708
         name "cam0"
         fieldOfView 1.5707
-        width 32
-        height 32
+        width 50
+        height 50
         near 0.001
       }
       Camera {
         translation 0 0 0.03
         name "cam1"
         fieldOfView 1.5707
-        width 32
-        height 32
+        width 50
+        height 50
         near 0.001
       }
       Camera {
@@ -73,8 +73,8 @@ PROTO Pusher [
         rotation 0 0 1 -1.5707
         name "cam2"
         fieldOfView 1.5707
-        width 32
-        height 32
+        width 50
+        height 50
         near 0.001
       }
       Camera {
@@ -82,8 +82,8 @@ PROTO Pusher [
         rotation 0 0 1 -3.141592
         name "cam3"
         fieldOfView 1.5707
-        width 32
-        height 32
+        width 50
+        height 50
         near 0.001
       }
       DEF PusherBody Shape {

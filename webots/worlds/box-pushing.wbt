@@ -10,8 +10,8 @@ WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.5685126579580386 0.5637934015490956 0.5991079686593949 2.0540574967051763
-  position -0.013196222101809374 -0.23265839395397048 4.959099897055271
+  orientation -0.5703696319810653 0.5685420342652442 0.5928224339440286 2.0588625155986175
+  position 0.006728034943671928 -0.23548933309844228 4.5051335700107025
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -32,7 +32,7 @@ RectangleArena {
   wallHeight 0.05
 }
 DEF GOAL Solid {
-  translation -0.91846 1.19082 0.05
+  translation 1.05154 0.91082 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -52,7 +52,7 @@ DEF GOAL Solid {
   }
 }
 DEF BOX Solid {
-  translation 1.08 -1.1 0.05
+  translation -1.07 -1.02 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -61,7 +61,7 @@ DEF BOX Solid {
         metalness 0
       }
       geometry DEF BOX_GEOMETRY Box {
-        size 0.5 0.5 0.1
+        size 0.4 0.4 0.1
       }
     }
   ]
@@ -70,6 +70,57 @@ DEF BOX Solid {
   physics Physics {
     density -1
     mass 1
+    damping Damping {
+      linear 0.99
+      angular 0.99
+    }
+  }
+}
+DEF BOX Solid {
+  translation -0.5 -0.5 0.11
+  rotation 0 1 0 0
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry DEF BOX_GEOMETRY Box {
+        size 2 0.1 0.2
+      }
+    }
+  ]
+  name "wall(0)"
+  boundingObject USE BOX_GEOMETRY
+  physics Physics {
+    density -1
+    mass 100
+    damping Damping {
+      linear 0.99
+      angular 0.99
+    }
+  }
+}
+DEF BOX Solid {
+  translation 0.5 0.54 0.11
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 0
+        roughness 1
+        metalness 0
+      }
+      geometry DEF BOX_GEOMETRY Box {
+        size 2 0.1 0.2
+      }
+    }
+  ]
+  name "wall(1)"
+  boundingObject USE BOX_GEOMETRY
+  physics Physics {
+    density -1
+    mass 100
     damping Damping {
       linear 0.99
       angular 0.99

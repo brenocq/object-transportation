@@ -5,7 +5,7 @@ import random
 # State
 class State(Enum):
     # Paper states
-    SEARCH_OBJECT = 1
+    RANDOM_WALK = 1
     APPROACH_OBJECT = 2
     MOVE_AROUND_OBJECT = 3
     PUSH_OBJECT = 4
@@ -46,9 +46,9 @@ def init():
     global leftMotor
     global rightMotor
 
-    TIME_STEP = 128
+    TIME_STEP = 512
     MAX_SPEED = 10
-    IMAGE_SIZE = 32
+    IMAGE_SIZE = 50
     IR_SENSOR_LIMIT = 950.0
     ROBOT_RADIUS = 0.02
 
@@ -59,9 +59,9 @@ def init():
     # |         | <--- IMAGE_MAX_ROW row just before robot seeing itself
     # | rrrrrrr |
     # +rrrrrrrrr+
-    IMAGE_MAX_ROW = 32-6
+    IMAGE_MAX_ROW = 50-10
 
-    state = State.SEARCH_OBJECT
+    state = State.RANDOM_WALK
     worldTime = 0
 
     # Color interval for object and goal

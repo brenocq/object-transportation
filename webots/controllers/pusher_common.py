@@ -234,6 +234,11 @@ def directionToGoal():
     return found, direction
 
 def distanceToObject():
+    return distanceToColor(g.objectColor)
+def distanceToGoal():
+    return distanceToColor(g.goalColor)
+
+def distanceToColor(color):
     '''
     Distance to algorithm
 
@@ -252,46 +257,52 @@ def distanceToObject():
                 b = g.cams[i].imageGetBlue(g.cams[i].getImage(), g.IMAGE_SIZE, x, y)
 
                 # Check if pixel is object pixel
-                if g.objectColor.check(r, gr, b):
+                if color.check(r, gr, b):
                     return y
     return g.IMAGE_SIZE
 
 
 ########## STATES ##########
-def searchObject():
+def randomWalk():
     wallDistParam = 400
     nearWall = (g.irs[0].getValue() < wallDistParam) \
         or (g.irs[1].getValue() < wallDistParam)     \
         or (g.irs[7].getValue() < wallDistParam)
 
-    if canSeeObject():
+    # Check if should stop random walk
+    if canSeeObject() and canSeeGoal():
         changeState(g.State.APPROACH_OBJECT)
-    elif not nearWall and not searchObject.RW_turning:
-        searchObject.counter = 0
+
+    elif not nearWall and not randomWalk.RW_turning:
+        # Move in straight line
+        randomWalk.counter = 0
         g.leftMotor.setVelocity(g.MAX_SPEED)
         g.rightMotor.setVelocity(g.MAX_SPEED)
     else:
-        searchObject.RW_turning = True
-        if searchObject.counter < searchObject.turnTimer:
+        randomWalk.RW_turning = True
+        if randomWalk.counter < randomWalk.turnTimer:
+            # Turning
             g.leftMotor.setVelocity(-g.MAX_SPEED)
             g.rightMotor.setVelocity(g.MAX_SPEED)
-            searchObject.counter += g.TIME_STEP
+            randomWalk.counter += g.TIME_STEP
         else:
-            searchObject.RW_turning = False
-            searchObject.turnTimer = random.randint(512, 512*3)
-searchObject.RW_turning = False  # helps manage the random walk, for when it reaches a wall
-searchObject.counter = 0
-searchObject.turnTimer = 0
+            # Finished turning
+            randomWalk.RW_turning = False
+            randomWalk.turnTimer = random.randint(512, 512*3)
+randomWalk.RW_turning = False
+randomWalk.counter = 0
+randomWalk.turnTimer = 0
 
 def approachObject():
     minDist = 5# Minimum distance to the object to change state
     minAngle = 10# The front angle interval is [-minAngle, minAngle]
 
     isVisible, direction = directionToObject()
-    if isVisible:
+    if isVisible and canSeeGoal():
         vecToMotor(dirToVec(direction))
     else:
-        changeState(g.State.SEARCH_OBJECT)
+        changeState(g.State.RANDOM_WALK)
+        return
 
     # Check if arrived
     dist = distanceToObject()
@@ -326,7 +337,7 @@ def moveAroundObject(clockwise = True):
 
     #----- Check lost object -----#
     if not visible:
-        changeState(g.State.SEARCH_OBJECT)
+        changeState(g.State.RANDOM_WALK)
 
     #----- Check should push -----#
     if g.worldTime % 1024 == 0:

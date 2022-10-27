@@ -1,8 +1,10 @@
 PROTO Pusher [
-  field SFString   name "pusher"
+  field SFString   name        "pusher"
+  field SFString   controller  "pusher_paper"
   field SFVec3f    translation  0 0 0.016
   field SFRotation rotation     0 0 1 0
   field SFFloat    bodyMass     1
+  field SFColor    color        0 0 1
 ]
 {
   Robot {
@@ -86,7 +88,7 @@ PROTO Pusher [
       }
       DEF PusherBody Shape {
         appearance PBRAppearance {
-          baseColor 0.0 0.0 1.0
+          baseColor IS color
           roughness 1
           metalness 0
         }
@@ -106,7 +108,7 @@ PROTO Pusher [
           }
         ]
         endPoint DEF PusherWheel Solid {
-          translation 0.02 0 -0.011
+          translation 0.016 0 -0.011
           rotation 0 1 0 1.5708
           children [
             DEF PusherWheelShape Shape {
@@ -133,7 +135,7 @@ PROTO Pusher [
           }
         ]
         endPoint DEF PusherWheel Solid {
-          translation -0.02 0 -0.011
+          translation -0.016 0 -0.011
           rotation 0 1 0 1.5708
           children [
             DEF PusherWheelShape Shape {
@@ -149,12 +151,19 @@ PROTO Pusher [
           }
         }
       }
+      Emitter {
+        type "radio"
+        range -1
+        maxRange -1
+        aperture -1
+        name "radio emitter"
+      }
     ]
     boundingObject USE PusherBody
     physics Physics {
       density -1
       mass IS bodyMass
     }
-    controller "pusher"
+    controller IS controller
   }
 }

@@ -77,6 +77,11 @@ DEF BOX Solid {
   }
 }
 Robot {
+  children [
+    Receiver {
+      name "radio receiver"
+    }
+  ]
   name "supervisor"
   controller "supervisor"
   supervisor TRUE

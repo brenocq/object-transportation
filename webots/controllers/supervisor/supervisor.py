@@ -1,4 +1,4 @@
-from controller import Supervisor
+from controller import Supervisor, Receiver
 import random
 from math import sqrt, pi
 import datetime
@@ -7,16 +7,22 @@ import csv
 import matplotlib.pyplot as plt
 import pandas as pd
 import math
+import struct
 
 ########## GLOBAL VARIABLES ##########
 TIME_STEP = 256 # Record positions every 128ms
-NUM_ROBOTS = 1 # Number of robots to spawn
+ROBOT_CONTROLLER = "pusher_paper"# Set to "pusher" or "pusher_paper""
 
-ARENA_SIZE = 1.5
+ARENA_SIZE = 3.0
+WALL_THICKNESS = 0.01
 ROBOT_RADIUS = 0.02
 MIN_BOX_GOAL_DIST = 0# Set in main from box/goal sizes
 
 sup = Supervisor()
+
+# get the message reciever
+receiver = sup.getDevice('radio receiver')
+receiver.enable(TIME_STEP)
 
 def spawnRobots(NUM_ROBOTS):
     '''
@@ -37,7 +43,9 @@ def spawnRobots(NUM_ROBOTS):
         freePosition = False
         while not freePosition:
             freePosition = True
-            robotPos = [ random.uniform(-ARENA_SIZE, ARENA_SIZE), random.uniform(-ARENA_SIZE, ARENA_SIZE) ]
+            minArenaSize = -1*ARENA_SIZE/2 + ROBOT_RADIUS + WALL_THICKNESS
+            maxArenaSize = ARENA_SIZE/2 - ROBOT_RADIUS - WALL_THICKNESS
+            robotPos = [ random.uniform(minArenaSize, maxArenaSize), random.uniform(minArenaSize, maxArenaSize) ]
 
             # Check goal collision
             dx = robotPos[0] - goalPos[0]
@@ -69,11 +77,18 @@ def spawnRobots(NUM_ROBOTS):
                     freePosition = False
                     continue
 
+        # Random orientation
+        randomAngle = random.uniform(0, 3.1415926535*2)
+        robotOri = [ 0, 0, math.sin(randomAngle/2.0), math.cos(randomAngle/2.0)]
+
         # Robot creation string
         robotsPos.append(robotPos)
         robotDef = "PUSHER"+str(i)
         robotString = f"""DEF {robotDef} Pusher {{
+                            name "pusher({i})"
                             translation {robotPos[0]} {robotPos[1]} 0.016
+                            rotation {robotOri[0]} {robotOri[1]} {robotOri[2]} {robotOri[3]}
+                            controller "{ROBOT_CONTROLLER}"
                         }}"""
 
         # Add robot to root node
@@ -137,6 +152,28 @@ def saveRecordingPlots(filename,recording):
     plt.title('Paths of the object centroid')
     plt.savefig(filename)
 
+def changeRobotColor():
+    # the message is the number of the robot, and a string (B or G) which is what colour to be
+    msg = receiver.getData() # read the message at the head of the receiver queue
+    msg = struct.unpack("I 1s",msg) # unpack the first element of the mssage
+    num = msg[0]
+    color = msg[1]
+    print('PUSHER'+str(num), 'COLOR=', color)
+
+    # get the pusher and the color field
+    pusher = sup.getFromDef('PUSHER'+str(num))
+    color_field = pusher.getField("color")
+
+    # change the color of the robot
+    if color == b"G":
+        #print('green!')
+        color_field.setSFColor([0, 1, 0])
+    elif color == b"B":
+        #print('blue!')
+        color_field.setSFColor([0, 0, 1])
+
+    receiver.nextPacket() # remove the message at the head of the queue
+
 def main():
     global MIN_BOX_GOAL_DIST
     currRepetitionTime = 0.0 # Current repetition time
@@ -147,7 +184,7 @@ def main():
     #maxRepetitionTime = 10.0 # Timeout in seconds
 
     # Testing config
-    numberRobotsPerTrial = [20]
+    numberRobotsPerTrial = [10]
     numRepetitions = 1
     maxRepetitionTime = 360.0
 
@@ -179,6 +216,10 @@ def main():
         spawnRobots(NUM_ROBOTS)
 
         while sup.step(TIME_STEP) != -1 and currRepetition < numRepetitions:
+            # check for messages from pushers wanting to change colour
+            while receiver.getQueueLength() > 0:
+                changeRobotColor()
+
             # Advance recording time
             currRepetitionTime += TIME_STEP/1000.0
 
@@ -189,8 +230,6 @@ def main():
             # Check if should stop repetition
             dx = goalPos[0] - boxPos[0]
             dy = goalPos[1] - boxPos[1]
-
-            #print('distance = ', sqrt(dx*dx + dy*dy))
 
             if sqrt(dx*dx + dy*dy) <= MIN_BOX_GOAL_DIST or currRepetitionTime >= maxRepetitionTime:
                 # Add repetition data to recording

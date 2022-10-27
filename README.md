@@ -1,15 +1,10 @@
-# cooperative-transport
+# box-pushing
 Cooperative multi-robot object transport with obstacle avoidance
 
-Problems/tasks:
-1. freeDirectionToBox isn't actually being used I think? it could replace directionToColor() in the 'moveToward' state, but I'm not 100% sure how the how it would alter the conditions in the state (ie. what values correspond to what direction).
-2. If we do that ^, then what does the robot do if there is no free space near the box while it is still some distance from the box? (can't do left wall following if there's no wall)
-3. Robots think they are at the box if they collide with another robot. We rely only on the front IR distance sensor, perhaps some condition like 'if the box fills over 60% of the field of view' could be added as an output to the freeDirectionToBox function and as a conditon in the 'moveToward' state.
-4. moveAround() does nothing, probably needs left-wall following
-5. That ^ function needs an exit condition to move to another state (perhaps a combination of some box-seeing condition and a time-elapsed counter)
-6. idk what the plan is with the json file, but I've added a csv file that stores the timings for each run (because this is quick for me to manipulate and plot in python later on) 
-7. Is it possible to make webots stop running after it does one full set of experiments (ie. once it has done the 'supervisor' code fully), would make it a bit easier to automate the exporting of data/plots without it dumping tiny files of incomplete runs.
+"New" Implementation
 
-For the 'new' implementation stuff we wanted to do:
-1. I don't know if we can change the colour of the robot from the controller, but it is possible to add LED lights to protos, perhaps adding those is a work-around.
-2. or, what might be possible, use the supervisor to check when the robot decides to become an interim goal (however it determines that...), then delete that robot, and replace it with a new type of robot proto (which is the same form as the pusher, but a different colour, and perhaps a different controller file) at the exact same location.
+1. The pushers and supervisor can now comminucate via emitter and receivers. This is one-way communication from the pusher to the supervisor. The pusher emits a message to the supervisor using the 'sendMessagetoController' function, which only requires as input a string ('blue' or 'green') to tell the supervisor which colour to change it to. The supervisor parses through all messages using its "changeRobotColor" function and performs the colour change for all robots that have sent a message.
+2. The 'BE_A_GOAL' state has a placeholder behaviour, and is (for now) activated when the robot sees both the goal and the box while its in the 'searchObject' state (again, this was just to test the colour changing).
+3. I think to coordinate which robots change to green, it might be an idea to add an infra-red emitter and reciever to the pushers as well (on top of the radio emitter it uses for communicating to the supervisor). This works on line-of-sight, and can't pass through objects, so I think it would work on the same principles taht we agreed on with using cameras for line-of-sight control.
+4. That ^ could be something like 'I tell all the robots that I see not to become a goal, because I've already become a goal', or something similar, which might stop too many of them becoming a goal.
+5. We should consider making a second map, one that has a wall or two, to test the new implementation.

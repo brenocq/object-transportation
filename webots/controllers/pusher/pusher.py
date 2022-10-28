@@ -31,18 +31,24 @@ def randomWalk():
     allowStateChange = False
     if randomWalk.shouldCheck == 0:
         allowStateChange = True
-        randomWalk.shouldCheck = random.randint(2, 5)*g.TIME_STEP
+        randomWalk.shouldCheck = g.TIME_STEP
         canSeeGoalNow, goalDir = common.directionToGoal()
         canSeeObjectNow, objectDir = common.directionToObject()
         if randomWalk.couldSeeGoal and not canSeeGoalNow:
             if canSeeObjectNow:
-                if common.angleDistance(randomWalk.objectDir, randomWalk.goalDir) > 90:
-                    common.changeState(g.State.BE_A_GOAL)
+                if randomWalk.goodDirMeasure:
+                    if common.angleDistance(randomWalk.objectDir, randomWalk.goalDir) > 90:
+                        print(f'[randomWalk] Turn into goal, can see object ({randomWalk.objectDir},{randomWalk.goalDir} -> {common.angleDistance(randomWalk.objectDir, randomWalk.goalDir)})')
+                        common.changeState(g.State.BE_A_GOAL)
             else:
                 common.changeState(g.State.BE_A_GOAL)
+                print(f'[randomWalk] Turn into goal, CANT see object ({randomWalk.objectDir},{randomWalk.goalDir} -> {common.angleDistance(randomWalk.objectDir, randomWalk.goalDir)})')
         if canSeeGoalNow and canSeeObjectNow:
             randomWalk.goalDir = goalDir
             randomWalk.objectDir = objectDir
+            randomWalk.goodDirMeasure = True
+        else:
+            randomWalk.goodDirMeasure = False
         randomWalk.couldSeeGoal = canSeeGoalNow
     else:
         randomWalk.shouldCheck -= g.TIME_STEP
@@ -57,25 +63,35 @@ def randomWalk():
     if g.state != g.State.RANDOM_WALK:
         randomWalk.couldSeeGoal = False
         randomWalk.shouldCheck = 0
+randomWalk.goodDirMeasure = False
 randomWalk.couldSeeGoal = False
 randomWalk.goalDir = 0
 randomWalk.objectDir = 0
 randomWalk.shouldCheck = 0
 
 def approachObject():
-    common.approachObject()
+    common.approachObject(checkGoal = True)
 
     canSeeGoal, goalDir = common.directionToGoal()
     canSeeObject, objectDir = common.directionToObject()
-    if g.state == g.State.RANDOM_WALK:
+    if g.state == g.State.RANDOM_WALK and not canSeeGoal and randomWalk.couldSeeGoal:
         if canSeeObject:
-            if common.angleDistance(approachObject.objectDir, approachObject.goalDir) > 90:
-                common.changeState(g.State.BE_A_GOAL)
+            if approachObject.goodDirMeasure:
+                if common.angleDistance(approachObject.objectDir, approachObject.goalDir) > 90:
+                    common.changeState(g.State.BE_A_GOAL)
+                    print(f'[approachObject] Turn into goal, big angle ({approachObject.objectDir},{approachObject.goalDir} -> {common.angleDistance(approachObject.objectDir, approachObject.goalDir)})')
         else:
+            print(f'[approachObject] Turn into goal, CANT see object ({approachObject.objectDir},{approachObject.goalDir} -> {common.angleDistance(approachObject.objectDir, approachObject.goalDir)})')
             common.changeState(g.State.BE_A_GOAL)
+    randomWalk.couldSeeGoal = canSeeGoal
+
     if canSeeGoal and canSeeObject:
         approachObject.goalDir = goalDir
         approachObject.objectDir = objectDir
+        approachObject.goodDirMeasure = True
+    else:
+        approachObject.goodDirMeasure = False
+approachObject.goodDirMeasure = False
 approachObject.objectDir = 0
 approachObject.goalDir = 0
 

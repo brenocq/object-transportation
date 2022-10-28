@@ -25,14 +25,14 @@ maps = {
         'goal': {'pos': [-1.0, 1.0]},
         'object': {'pos': [-1.0, -1.0]},
         'walls': [
-            {'pos': [-0.5, 0.0], 'size': [2.0, 0.1]}
+            {'pos': [-0.5, 0.0], 'size': [2.0, 0.5]}
         ]
     },
     'middle': {
         'goal': {'pos': [0.0, 1.0]},
         'object': {'pos': [0.0, -1.0]},
         'walls': [
-            {'pos': [0.0, 0.0], 'size': [2.0, 0.1]}
+            {'pos': [0.0, 0.0], 'size': [1.5, 0.5]}
         ]
     },
     '2-corners': {
@@ -59,11 +59,13 @@ def createWorld(experiment):
     # Move object
     boxPos = maps[experiment['map']]['object']['pos']
     sup.getFromDef('BOX').getField('translation').setSFVec3f([boxPos[0], boxPos[1], 0.05])
+    sup.getFromDef('BOX').getField('rotation').setSFRotation([0, 0, -1, 0])
     boxSize = sup.getFromDef('BOX_GEOMETRY').getField('size').getSFVec3f()
 
     # Move goal
     goalPos = maps[experiment['map']]['goal']['pos']
     sup.getFromDef('GOAL').getField('translation').setSFVec3f([goalPos[0], goalPos[1], 0.05])
+    sup.getFromDef('GOAL').getField('rotation').setSFRotation([0, 0, -1, 0])
     goalRadius = sup.getFromDef('GOAL_GEOMETRY').getField('radius').getSFFloat()
 
     # Create walls
@@ -99,7 +101,7 @@ def createWorld(experiment):
             # Check box collision
             dx = robotPos[0] - boxPos[0]
             dy = robotPos[1] - boxPos[1]
-            if sqrt(dx*dx + dy*dy) < boxSize[0] * sqrt(2.0) * 0.5 + ROBOT_RADIUS + gap:
+            if sqrt(dx*dx + dy*dy) < boxSize[0]*sqrt(2.0) * 0.5  + ROBOT_RADIUS + gap:
                 freePosition = False
                 continue
 
@@ -214,30 +216,20 @@ def main():
 
     # Experiments to be performed
     experiments = [
-        #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher'},
-        #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher'},
-        #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 15, 'map': 'reference', 'controller': 'pusher'},
-        #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 5, 'map': 'corner', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 5, 'map': 'middle', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 60*60,'numRobots': 5, 'map': '2-corners', 'controller': 'pusher'},
 
-        {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 15, 'map': 'reference', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher_paper'},
+        {'numRepetitions': 1, 'timeout': 20*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 10, 'map': 'corner', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 10, 'map': 'middle', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 60*60,'numRobots': 10, 'map': '2-corners', 'controller': 'pusher'},
 
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 5, 'map': 'corner', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 10, 'map': 'corner', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 15, 'map': 'corner', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 20, 'map': 'corner', 'controller': 'pusher_paper'},
-
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 5, 'map': 'middle', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 10, 'map': 'middle', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 15, 'map': 'middle', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 20, 'map': 'middle', 'controller': 'pusher_paper'},
-
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 5, 'map': '2-corners', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 10, 'map': '2-corners', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 15, 'map': '2-corners', 'controller': 'pusher_paper'},
-        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 20, 'map': '2-corners', 'controller': 'pusher_paper'},
+        {'numRepetitions': 1, 'timeout': 20*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 20, 'map': 'corner', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 20, 'map': 'middle', 'controller': 'pusher'},
+        {'numRepetitions': 1, 'timeout': 60*60,'numRobots': 20, 'map': '2-corners', 'controller': 'pusher'},
     ]
 
     # Recording of each experiment

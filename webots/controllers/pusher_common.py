@@ -71,7 +71,7 @@ vecToMotor.swapTime = 512
 def angleDistance(a0, a1):
     dist = (a1-a0) if a1 > a0 else (a0-a1)
     if dist > 180:
-        return dist - 180
+        return 360 - dist
     return dist
 
 ########## SENSING ##########
@@ -265,19 +265,29 @@ def distanceToColor(color):
 ########## STATES ##########
 def randomWalk():
     wallDistParam = 400
-    nearWall = (g.irs[0].getValue() < wallDistParam) \
-        or (g.irs[1].getValue() < wallDistParam)     \
-        or (g.irs[7].getValue() < wallDistParam)
+    if randomWalk.dirFront:
+        nearWall = (g.irs[0].getValue() < wallDistParam) \
+            or (g.irs[1].getValue() < wallDistParam)     \
+            or (g.irs[7].getValue() < wallDistParam)
+    else:
+        nearWall = (g.irs[4].getValue() < wallDistParam) \
+            or (g.irs[5].getValue() < wallDistParam)     \
+            or (g.irs[3].getValue() < wallDistParam)
 
     # Check if should stop random walk
     if canSeeObject() and canSeeGoal():
         changeState(g.State.APPROACH_OBJECT)
+        randomWalk.dirFront = not randomWalk.dirFront
 
     elif not nearWall and not randomWalk.RW_turning:
         # Move in straight line
         randomWalk.counter = 0
-        g.leftMotor.setVelocity(g.MAX_SPEED)
-        g.rightMotor.setVelocity(g.MAX_SPEED)
+        if randomWalk.dirFront:
+            g.leftMotor.setVelocity(g.MAX_SPEED)
+            g.rightMotor.setVelocity(g.MAX_SPEED)
+        else:
+            g.leftMotor.setVelocity(-g.MAX_SPEED)
+            g.rightMotor.setVelocity(-g.MAX_SPEED)
     else:
         randomWalk.RW_turning = True
         if randomWalk.counter < randomWalk.turnTimer:
@@ -289,17 +299,18 @@ def randomWalk():
             # Finished turning
             randomWalk.RW_turning = False
             randomWalk.turnTimer = random.randint(512, 512*3)
+randomWalk.dirFront = True
 randomWalk.RW_turning = False
 randomWalk.counter = 0
 randomWalk.turnTimer = 0
 
-def approachObject():
+def approachObject(checkGoal = False):
     minDist = 5# Minimum distance to the object to change state
     minAngle = 10# The front angle interval is [-minAngle, minAngle]
 
     objectIsVisible, direction = directionToObject()
     goalIsVisible = canSeeGoal()
-    if objectIsVisible and goalIsVisible:
+    if objectIsVisible and ((not checkGoal) or goalIsVisible):
         vecToMotor(dirToVec(direction))
     else:
         changeState(g.State.RANDOM_WALK)
@@ -393,7 +404,7 @@ def pushObject():
             # If approaching the object, move fast
             vecToMotor(dirToVec(direction))
     else:
-        print(f'No free space')
+        #print(f'No free space')
         changeState(g.State.MOVE_AROUND_OBJECT)
 
     # Check every 5 seconds if it is still pushing the box
@@ -401,12 +412,12 @@ def pushObject():
     if g.worldTime % (3*1024) == 0:
         if not ((direction > -frontError and direction < frontError) or \
          (direction < -180+frontError or direction > 180-frontError)):
-            print(f'Could not push to direction {direction}, another robot was blocking')
+            #print(f'Could not push to direction {direction}, another robot was blocking')
             changeState(g.State.MOVE_AROUND_OBJECT)
 
     # Check every 2 seconds if should move around the object
     if g.worldTime % (2*1024) == 0:
         if canSeeGoal():
-            print(f'Can see goal, move around object')
+            #print(f'Can see goal, move around object')
             changeState(g.State.MOVE_AROUND_OBJECT)
 

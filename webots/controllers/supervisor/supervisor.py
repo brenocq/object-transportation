@@ -25,7 +25,7 @@ maps = {
         'goal': {'pos': [-1.0, 1.0]},
         'object': {'pos': [-1.0, -1.0]},
         'walls': [
-            {'pos': [-0.5, 0.0], 'size': [2.0, 0.8]}
+            {'pos': [-0.5, 0.0], 'size': [2.0, 0.1]}
         ]
     },
     'middle': {
@@ -39,7 +39,8 @@ maps = {
         'goal': {'pos': [1.0, 1.0]},
         'object': {'pos': [-1.0, -1.0]},
         'walls': [
-            {'pos': [0.0, 0.0], 'size': [2.0, 0.1]}
+            {'pos': [-0.5, -0.5], 'size': [2.0, 0.1]},
+            {'pos': [0.5, 0.5], 'size': [2.0, 0.1]}
         ]
     }
 }
@@ -217,10 +218,26 @@ def main():
         #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher'},
         #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 15, 'map': 'reference', 'controller': 'pusher'},
         #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher'},
+
         {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher_paper'},
         {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher_paper'},
         {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 15, 'map': 'reference', 'controller': 'pusher_paper'},
         {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher_paper'},
+
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 5, 'map': 'corner', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 10, 'map': 'corner', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 15, 'map': 'corner', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 20, 'map': 'corner', 'controller': 'pusher_paper'},
+
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 5, 'map': 'middle', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 10, 'map': 'middle', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 15, 'map': 'middle', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 20, 'map': 'middle', 'controller': 'pusher_paper'},
+
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 5, 'map': '2-corners', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 10, 'map': '2-corners', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 15, 'map': '2-corners', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 10*60,'numRobots': 20, 'map': '2-corners', 'controller': 'pusher_paper'},
     ]
 
     # Recording of each experiment

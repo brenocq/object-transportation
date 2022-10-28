@@ -263,7 +263,7 @@ def distanceToColor(color):
 
 
 ########## STATES ##########
-def randomWalk():
+def randomWalk(checkGoal = False):
     wallDistParam = 400
     if randomWalk.dirFront:
         nearWall = (g.irs[0].getValue() < wallDistParam) \
@@ -275,7 +275,7 @@ def randomWalk():
             or (g.irs[3].getValue() < wallDistParam)
 
     # Check if should stop random walk
-    if canSeeObject() and canSeeGoal():
+    if canSeeObject() and ((not checkGoal) or canSeeGoal()):
         changeState(g.State.APPROACH_OBJECT)
         randomWalk.dirFront = not randomWalk.dirFront
 

@@ -21,18 +21,18 @@ maps = {
         'object': {'pos': [-1.0, -1.0]},
         'walls': []
     },
-    'corner': {
-        'goal': {'pos': [-1.0, 1.0]},
-        'object': {'pos': [-1.0, -1.0]},
-        'walls': [
-            {'pos': [-0.5, 0.0], 'size': [2.0, 0.5]}
-        ]
-    },
     'middle': {
         'goal': {'pos': [0.0, 1.0]},
         'object': {'pos': [0.0, -1.0]},
         'walls': [
             {'pos': [0.0, 0.0], 'size': [1.5, 0.5]}
+        ]
+    },
+    'corner': {
+        'goal': {'pos': [-1.0, 1.0]},
+        'object': {'pos': [-1.0, -1.0]},
+        'walls': [
+            {'pos': [-0.5, 0.0], 'size': [2.0, 0.5]}
         ]
     },
     '2-corners': {
@@ -216,20 +216,10 @@ def main():
 
     # Experiments to be performed
     experiments = [
-        {'numRepetitions': 1, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher'},
-        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 5, 'map': 'corner', 'controller': 'pusher'},
-        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 5, 'map': 'middle', 'controller': 'pusher'},
-        {'numRepetitions': 1, 'timeout': 60*60,'numRobots': 5, 'map': '2-corners', 'controller': 'pusher'},
-
-        {'numRepetitions': 1, 'timeout': 20*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher'},
-        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 10, 'map': 'corner', 'controller': 'pusher'},
-        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 10, 'map': 'middle', 'controller': 'pusher'},
-        {'numRepetitions': 1, 'timeout': 60*60,'numRobots': 10, 'map': '2-corners', 'controller': 'pusher'},
-
-        {'numRepetitions': 1, 'timeout': 20*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher'},
-        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 20, 'map': 'corner', 'controller': 'pusher'},
-        {'numRepetitions': 1, 'timeout': 40*60,'numRobots': 20, 'map': 'middle', 'controller': 'pusher'},
-        {'numRepetitions': 1, 'timeout': 60*60,'numRobots': 20, 'map': '2-corners', 'controller': 'pusher'},
+        {'numRepetitions': 2, 'timeout': 20*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher'},
+        #{'numRepetitions': 1, 'timeout': 3*60,'numRobots': 20, 'map': 'middle', 'controller': 'pusher_paper'},
+        #{'numRepetitions': 1, 'timeout': 3*60,'numRobots': 20, 'map': 'corner', 'controller': 'pusher_paper'},
+        #{'numRepetitions': 1, 'timeout': 3*60,'numRobots': 20, 'map': '2-corners', 'controller': 'pusher_paper'},
     ]
 
     # Recording of each experiment

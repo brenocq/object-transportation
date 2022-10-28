@@ -11,12 +11,38 @@ import struct
 
 ########## GLOBAL VARIABLES ##########
 TIME_STEP = 256 # Record positions every 128ms
-ROBOT_CONTROLLER = "pusher"# Set to "pusher" or "pusher_paper""
-
 ARENA_SIZE = 3.0
 WALL_THICKNESS = 0.01
 ROBOT_RADIUS = 0.02
-MIN_BOX_GOAL_DIST = 0# Set in main from box/goal sizes
+
+maps = {
+    'reference': {
+        'goal': {'pos': [1.0, 1.0]},
+        'object': {'pos': [-1.0, -1.0]},
+        'walls': []
+    },
+    'corner': {
+        'goal': {'pos': [-1.0, 1.0]},
+        'object': {'pos': [-1.0, -1.0]},
+        'walls': [
+            {'pos': [-0.5, 0.0], 'size': [2.0, 0.1]}
+        ]
+    },
+    'middle': {
+        'goal': {'pos': [0.0, 1.0]},
+        'object': {'pos': [0.0, -1.0]},
+        'walls': [
+            {'pos': [0.0, 0.0], 'size': [2.0, 0.1]}
+        ]
+    },
+    '2-corners': {
+        'goal': {'pos': [1.0, 1.0]},
+        'object': {'pos': [-1.0, -1.0]},
+        'walls': [
+            {'pos': [0.0, 0.0], 'size': [2.0, 0.1]}
+        ]
+    }
+}
 
 sup = Supervisor()
 
@@ -24,27 +50,35 @@ sup = Supervisor()
 receiver = sup.getDevice('radio receiver')
 receiver.enable(TIME_STEP)
 
-def spawnRobots(NUM_ROBOTS):
+def createWorld(experiment):
     '''
-        Spawn robots in random valid positions
+        Spawn robots in random valid positions and create walls
     '''
-    gap = ROBOT_RADIUS
-    goalPos = sup.getFromDef('GOAL').getField('translation').getSFVec3f()
-    goalRadius = sup.getFromDef('GOAL_GEOMETRY').getField('radius').getSFFloat()
-    boxPos = sup.getFromDef('BOX').getField('translation').getSFVec3f()
+
+    # Move object
+    boxPos = maps[experiment['map']]['object']['pos']
+    sup.getFromDef('BOX').getField('translation').setSFVec3f([boxPos[0], boxPos[1], 0.05])
     boxSize = sup.getFromDef('BOX_GEOMETRY').getField('size').getSFVec3f()
-    #wallPos = sup.getFromDef('WALL').getField('translation').getSFVec3f()
-    #wallSize = sup.getFromDef('WALL').getField('size').getSFVec3f()
 
+    # Move goal
+    goalPos = maps[experiment['map']]['goal']['pos']
+    sup.getFromDef('GOAL').getField('translation').setSFVec3f([goalPos[0], goalPos[1], 0.05])
+    goalRadius = sup.getFromDef('GOAL_GEOMETRY').getField('radius').getSFFloat()
+
+    # Create walls
+    for i in range(len(maps[experiment["map"]]["walls"])):
+        pass
+
+    # Create robots
+    gap = ROBOT_RADIUS
     robotsPos = []
-
-    for i in range(NUM_ROBOTS):
+    for i in range(experiment["numRobots"]):
         # Random free position
         freePosition = False
         while not freePosition:
             freePosition = True
-            minArenaSize = -1*ARENA_SIZE/2 + ROBOT_RADIUS + WALL_THICKNESS
-            maxArenaSize = ARENA_SIZE/2 - ROBOT_RADIUS - WALL_THICKNESS
+            minArenaSize = -1*ARENA_SIZE/2 + ROBOT_RADIUS + WALL_THICKNESS + gap
+            maxArenaSize = ARENA_SIZE/2 - ROBOT_RADIUS - WALL_THICKNESS - gap
             robotPos = [ random.uniform(minArenaSize, maxArenaSize), random.uniform(minArenaSize, maxArenaSize) ]
 
             # Check goal collision
@@ -60,14 +94,6 @@ def spawnRobots(NUM_ROBOTS):
             if sqrt(dx*dx + dy*dy) < boxSize[0] * sqrt(2.0) * 0.5 + ROBOT_RADIUS + gap:
                 freePosition = False
                 continue
-            # check wall collison
-            #wallPos_x_max = wallPos[0] + wallSize[0] + 0.3
-            #wallPos_x_min = wallPos[0] - wallSize[0] - 0.3 # the wall is so narrow that they still spawn into it
-            #wallPos_y_max = wallPos[1] + wallSize[1]/1.9
-            #wallPos_y_min = wallPos[1] - wallSize[1]/1.9
-
-            #if (wallPos_x_min < robotPos[0] - ROBOT_RADIUS - gap and wallPos_x_max > robotPos[0] + ROBOT_RADIUS + gap) or (wallPos_y_min < robotPos[1] - ROBOT_RADIUS - gap and wallPos_y_max > robotPos[1] + ROBOT_RADIUS + gap):
-            #    freePosiition = False
 
             # Check robot collision
             for otherPos in robotsPos:
@@ -88,71 +114,24 @@ def spawnRobots(NUM_ROBOTS):
                             name "pusher({i})"
                             translation {robotPos[0]} {robotPos[1]} 0.016
                             rotation {robotOri[0]} {robotOri[1]} {robotOri[2]} {robotOri[3]}
-                            controller "{ROBOT_CONTROLLER}"
+                            controller "{experiment["controller"]}"
                         }}"""
 
         # Add robot to root node
         sup.getRoot().getField('children').importMFNodeFromString(-1, robotString)
 
-def destroyRobots(NUM_ROBOTS):
+def destroyWorld(experiment):
     '''
-        Destroy all spawned robots
+        Destroy all spawned robots and walls
     '''
-    for i in range(NUM_ROBOTS):
+    for i in range(experiment["numRobots"]):
         robotDef = "PUSHER"+str(i)
         sup.getFromDef(robotDef).remove()
+    for i in range(len(maps[experiment["map"]]["walls"])):
+        wallDef = "WALL"+str(i)
+        sup.getFromDef(wallDef).remove()
 
-def outputs(timings):
-    df = pd.DataFrame(timings)
-    df.columns = df.iloc[0]
-    df = df[1:]
-    # show results in terminal
-    sortedData = df.groupby(by=['NumRobots','NewImplementation'])
-    output = pd.DataFrame()
-    output['Success Rate'] = sortedData['Success'].mean()
-    output['Mean Successful Duration'] = sortedData['Duration'].mean()
-    output['Duration Variance'] = sortedData['Duration'].var()
-    #print(output)
-
-    #fig = df.groupby(['NumRobots','NewImplementation']).mean()['Duration'].unstack() \
-    #    .plot(title='Duration of Successful Box Moves Over Different Numbers of Robots', \
-    #    xlabel='Number of Robots', ylabel='Duration (s)').get_figure()
-    #fig.savefig('Duration over numRobots Plot.png')
-    #print('plot saved')
-
-def saveRecordingPlots(filename,recording):
-    initialBoxPos = recording['config']['initalBoxPosition'][:2]
-    initialGoalPos = recording['config']['initalGoalPosition'][:2]
-    boxPaths = []
-    for repetition in recording['repetitions']:
-        path = {"x": [], "y": []}
-        for pos in repetition["boxPositions"]:
-            path["x"].append(pos[0])
-            path["y"].append(pos[1])
-        boxPaths.append(path)
-
-    # Plot config
-    figSize = 5
-    localToPlt = figSize * 0.4 * 72  # 1 point = dpi / 72 pixels
-    plt.figure(figsize=[figSize, figSize])
-    ax = plt.axes([0.1, 0.1, 0.8, 0.8], xlim=(-1, 1), ylim=(-1, 1))
-
-    # Plot MIN_BOX_GOAL_DIST
-    pointSize = (2.0 * MIN_BOX_GOAL_DIST * localToPlt)**2
-    plt.scatter(initialGoalPos[0], initialGoalPos[1], s=pointSize, facecolors='none', edgecolors='k', linestyle='--')
-
-    # Plot initial and goal positions
-    plt.scatter(initialBoxPos[0], initialBoxPos[1], s=30, color='r')
-    plt.scatter(initialGoalPos[0], initialGoalPos[1], s=50, color='g')
-
-    # Plot paths
-    for i, path in enumerate(boxPaths):
-        plt.plot(path["x"], path["y"])
-
-    plt.title('Paths of the object centroid')
-    plt.savefig(filename)
-
-def changeRobotColor():
+def handleRobotMessage():
     # the message is the number of the robot, and a string (B or G) which is what colour to be
     msg = receiver.getData() # read the message at the head of the receiver queue
     msg = struct.unpack("I 1s",msg) # unpack the first element of the mssage
@@ -175,109 +154,85 @@ def changeRobotColor():
     receiver.nextPacket() # remove the message at the head of the queue
 
 def main():
-    global MIN_BOX_GOAL_DIST
-    currRepetitionTime = 0.0 # Current repetition time
-
-    # Report config
-    #numberRobotsPerTrial = [1, 3, 5, 10]
-    #numRepetitions = 3 # Number of repetitions to be performed (box reaching goal or timeout)
-    #maxRepetitionTime = 10.0 # Timeout in seconds
-
-    # Testing config
-    numberRobotsPerTrial = [20]
-    numRepetitions = 1
-    maxRepetitionTime = 60.0*60.0# Maximum 1h
-
-    recording = {"config": {}, "repetitions": []} # Recorded data
-    recording['config']['numRobots'] = numberRobotsPerTrial
-    recording['config']['timeStep'] = TIME_STEP
-    recording['config']['maxRepetitionTime'] = maxRepetitionTime
-    recording['config']['numRepetitions'] = numRepetitions
-    recording['config']['initalGoalPosition'] = sup.getFromDef('GOAL').getField('translation').getSFVec3f()
-    recording['config']['initalBoxPosition'] = sup.getFromDef('BOX').getField('translation').getSFVec3f()
-    initialGoalRotation = sup.getFromDef('GOAL').getField('rotation').getSFRotation()
-    initialBoxRotation = sup.getFromDef('GOAL').getField('rotation').getSFRotation()
-
-    # Set from goal/box size
+    # Calculate min distance between goal and object
     goalRadius = sup.getFromDef('GOAL_GEOMETRY').getField('radius').getSFFloat()
     boxSize = sup.getFromDef('BOX_GEOMETRY').getField('size').getSFVec3f()
-    MIN_BOX_GOAL_DIST = boxSize[0]*math.sqrt(2.0)*0.5+goalRadius
+    minObjectGoalDist = boxSize[0]*math.sqrt(2.0)*0.5+goalRadius
 
-    timings = []
-    header = ['NumRobots', 'NewImplementation', 'Success', 'Duration']
-    timings.append(header)
-    print(f'Configuration:\n  - Num robots: {numberRobotsPerTrial}\n  - Repetitions: {numRepetitions}\n  - Max time: {maxRepetitionTime}s')
-    print('Recording...')
-    boxPosRecording = []
+    # Experiments to be performed
+    experiments = [
+        {'numRepetitions': 2, 'timeout': 10*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher_paper'},
+        {'numRepetitions': 0, 'timeout': 10*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher_paper'},
+        {'numRepetitions': 0, 'timeout': 10*60,'numRobots': 15, 'map': 'reference', 'controller': 'pusher_paper'},
+        {'numRepetitions': 0, 'timeout': 10*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher_paper'},
+    ]
 
-    for NUM_ROBOTS in numberRobotsPerTrial:
-        currRepetition = 0
-        print("NUMBER OF ROBOTS", NUM_ROBOTS)
-        spawnRobots(NUM_ROBOTS)
+    # Recording of each experiment
+    recordings = []
+    for experiment in experiments:
+        recording = {'config': {}, 'repetitions': []} # Recorded data
+        recording['config']['numRepetitions'] = experiment['numRepetitions']
+        recording['config']['numRobots'] = experiment['numRobots']
+        recording['config']['timeout'] = experiment['timeout']
+        recording['config']['timeStep'] = TIME_STEP
+        recording['config']['minObjectGoalDist'] = minObjectGoalDist
+        recording['config']['map'] = maps[experiment['map']]
 
-        while sup.step(TIME_STEP) != -1 and currRepetition < numRepetitions:
-            # check for messages from pushers wanting to change colour
-            while receiver.getQueueLength() > 0:
-                changeRobotColor()
+        for repetition in range(experiment["numRepetitions"]):
+            # Create world
+            createWorld(experiment)
 
-            # Advance recording time
-            currRepetitionTime += TIME_STEP/1000.0
+            # Run repetition
+            finishRepetition = False
+            currRepetitionTime = 0.0
+            data = {"success": False, "path": []}
+            while not finishRepetition:
+                if sup.step(TIME_STEP) != -1:
+                    # Advance recording time
+                    currRepetitionTime += TIME_STEP/1000.0
 
-            goalPos = sup.getFromDef('GOAL').getField('translation').getSFVec3f()
-            boxPos = sup.getFromDef('BOX').getField('translation').getSFVec3f()
-            boxPosRecording.append(boxPos)
+                    # Check for messages from pushers wanting to change colour
+                    while receiver.getQueueLength() > 0:
+                        handleRobotMessage()
 
-            # Check if should stop repetition
-            dx = goalPos[0] - boxPos[0]
-            dy = goalPos[1] - boxPos[1]
+                    # Add path data
+                    boxPos = sup.getFromDef('BOX').getField('translation').getSFVec3f()
+                    if len(data['path']):
+                        lastBoxPos = data['path'][-1]
+                        dx = lastBoxPos[0] - boxPos[0]
+                        dy = lastBoxPos[1] - boxPos[1]
+                        if sqrt(dx*dx + dy*dy) >= 0.01:
+                            data["path"].append(boxPos[:2])
+                    else:
+                        data["path"].append(boxPos[:2])
 
-            if sqrt(dx*dx + dy*dy) <= MIN_BOX_GOAL_DIST or currRepetitionTime >= maxRepetitionTime:
-                # Add repetition data to recording
-                repetitionData = {}
-                repetitionData["boxPositions"] = boxPosRecording
-                repetitionData["currRepetitionTime"] = currRepetitionTime
-                recording["repetitions"].append(repetitionData)
-                print(f'Finished repetition {currRepetition+1}/{numRepetitions}')
+                    # Check if box reached the goal
+                    goalPos = sup.getFromDef('GOAL').getField('translation').getSFVec3f()
+                    dx = goalPos[0] - boxPos[0]
+                    dy = goalPos[1] - boxPos[1]
+                    if sqrt(dx*dx + dy*dy) <= minObjectGoalDist:
+                        print("Finished repetition (success)")
+                        data["success"] = True
+                        finishRepetition = True
 
-                # Reset world
-                destroyRobots(NUM_ROBOTS)
-                sup.getFromDef('GOAL').getField('translation').setSFVec3f(recording['config']['initalGoalPosition'])
-                sup.getFromDef('BOX').getField('translation').setSFVec3f(recording['config']['initalBoxPosition'])
-                sup.getFromDef('GOAL').getField('rotation').setSFRotation(initialGoalRotation)
-                sup.getFromDef('BOX').getField('rotation').setSFRotation(initialBoxRotation)
-                if currRepetition != (numRepetitions - 1):
-                    spawnRobots(NUM_ROBOTS)
+                    # Check timeout
+                    if currRepetitionTime >= experiment["timeout"]:
+                        print("Finished repetition (timeout failed)")
+                        data["success"] = False
+                        finishRepetition = True
+            # Destroy world
+            destroyWorld(experiment)
+            # Save repetition recording
+            recording["repetitions"].append(data)
 
-                # print and save time taken for box to reach goal
-                if sqrt(dx*dx + dy*dy) <= MIN_BOX_GOAL_DIST:
-                    timings.append([NUM_ROBOTS, False, True, currRepetitionTime])
-                    print(f'Successful box movement duration: {currRepetitionTime}.')
-                else:
-                    timings.append([NUM_ROBOTS, False, False, None])
-                    print('Task not completed within time limit.')
+        # Save experiment recording
+        recordings.append(recording)
 
-                # Advance to next repetition
-                currRepetitionTime = 0.0
-                boxPosRecording = []
-                currRepetition += 1
-
-
-    filename = 'experiment_result'#'exp_'+str(datetime.datetime.now().timestamp())
-
-    # Save experiment json (to plot paths)
-    with open(filename+'.json', 'w') as outfile:
-        json.dump(recording, outfile)
+    # Save experiment recordings
+    filename = 'experiment_result-'+str(int(datetime.datetime.now().timestamp()))+'.json'
+    with open(filename, 'w') as outfile:
+        json.dump(recordings, outfile)
     print(f'Saved recording to {filename}')
-
-    # Save experiment plot
-    saveRecordingPlots(filename+'.png', recording)
-
-    # Save experiment timings to csv (for easier visualisation)
-    with open(filename+'.csv', 'w') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerows(timings)
-    print(f'Saved timings to {filename}')
-    outputs(timings)
 
 if __name__ == '__main__':
     main()

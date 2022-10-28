@@ -25,53 +25,6 @@ def sendMessageToController(color):
     message = struct.pack('I 1s',id, color_string)
     radioEmitter.send(message)
 
-########## GOAL SENSING ##########
-#def numVisibleGoals():
-#    '''
-#    Calculate number of visible goals
-#    '''
-#    numVisibleGoals = 0
-#    images = [g.cams[0].getImage(), g.cams[1].getImage(), g.cams[2].getImage(), g.cams[3].getImage()]
-#    visited = [0 for p in range(g.IMAGE_SIZE*g.IMAGE_SIZE*4)]
-#    for y in range(g.IMAGE_MAX_ROW):# From 0 to IMAGE_MAX_ROW
-#        for i in range(4):
-#            for x in range(g.IMAGE_SIZE):
-#                r = g.cams[i].imageGetRed(images[i], g.IMAGE_SIZE, x, y)
-#                gr = g.cams[i].imageGetGreen(images[i], g.IMAGE_SIZE, x, y)
-#                b = g.cams[i].imageGetBlue(images[i], g.IMAGE_SIZE, x, y)
-#
-#                w = g.IMAGE_SIZE*4
-#                gx = x + g.IMAGE_SIZE*i
-#                gy = y
-#                # Check if pixel is goal pixel (and was not visited before)
-#                if g.goalColor.check(r, gr, b) and visited[gy*w + gx] == 0:
-#                    numVisibleGoals += 1
-#                    # Mark neighbors as visited
-#                    stack = [[gx, gy]]
-#                    while len(stack) > 0:
-#                        gx, gy = stack[len(stack)-1]
-#                        stack.pop()
-#                        gx = (gx+w)%w
-#                        if gy < 0 or gy >= g.IMAGE_SIZE:
-#                            continue
-#                        i = gx//g.IMAGE_SIZE
-#                        r = g.cams[i].imageGetRed(images[i], g.IMAGE_SIZE, gx%g.IMAGE_SIZE, gy)
-#                        gr = g.cams[i].imageGetGreen(images[i], g.IMAGE_SIZE, gx%g.IMAGE_SIZE, gy)
-#                        b = g.cams[i].imageGetBlue(images[i], g.IMAGE_SIZE, gx%g.IMAGE_SIZE, gy)
-#
-#                        if g.goalColor.check(r, gr, b) and visited[gy*w + gx] == 0:
-#                            visited[gy*w + gx] = 1
-#                            stack.append([gx - 1, gy - 1])
-#                            stack.append([gx, gy - 1])
-#                            stack.append([gx + 1, gy - 1])
-#                            stack.append([gx - 1, gy])
-#                            stack.append([gx, gy])
-#                            stack.append([gx + 1, gy])
-#                            stack.append([gx - 1, gy + 1])
-#                            stack.append([gx, gy + 1])
-#                            stack.append([gx + 1, gy + 1])
-#    return numVisibleGoals
-
 ########## STATES ##########
 def randomWalk():
     # Check if could not see goal before, and now can see 1 goal
@@ -83,7 +36,7 @@ def randomWalk():
         canSeeObjectNow, objectDir = common.directionToObject()
         if randomWalk.couldSeeGoal and not canSeeGoalNow:
             if canSeeObjectNow:
-                if common.angleDistance(randomwalk.objectDir, randomwalk.goalDir) > 90:
+                if common.angleDistance(randomWalk.objectDir, randomWalk.goalDir) > 90:
                     common.changeState(g.State.BE_A_GOAL)
             else:
                 common.changeState(g.State.BE_A_GOAL)
@@ -123,7 +76,6 @@ def approachObject():
     if canSeeGoal and canSeeObject:
         approachObject.goalDir = goalDir
         approachObject.objectDir = objectDir
-
 approachObject.objectDir = 0
 approachObject.goalDir = 0
 

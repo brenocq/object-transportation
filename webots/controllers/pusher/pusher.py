@@ -115,14 +115,14 @@ def pushObject():
     # If timer reached zero, can't find goal anymore
     if pushObject.timer == 0:
         common.changeState(g.State.RANDOM_WALK)
-    pushObject.timer -= g.TIME_STEP
 
     # Reset timer when leave the state
+    pushObject.timer -= g.TIME_STEP
     if g.state != g.State.PUSH_OBJECT:
-        moveAroundObject.directionWasChosen = False
-        moveAroundObject.timer = moveAroundObject.timeout
+        pushObject.directionWasChosen = False
+        pushObject.timer = pushObject.timeout
 pushObject.timeout = 1024*2*60# Timeout 2min pushing
-pushObject.timer = moveAroundObject.timeout
+pushObject.timer = pushObject.timeout
 
 def beAGoal():
     if beAGoal.transitionWait >= 0:

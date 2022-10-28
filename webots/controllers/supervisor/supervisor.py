@@ -190,7 +190,7 @@ def saveImageFromRecording(recording, filename):
     ax = plt.axes([0.1, 0.1, 0.8, 0.8], xlim=(-ARENA_SIZE*0.5, ARENA_SIZE*0.5), ylim=(-ARENA_SIZE*0.5, ARENA_SIZE*0.5))
 
     # Plot MIN_BOX_GOAL_DIST
-    pointSize = (recording['config']['minObjectGoalDist'] * localToPlt)**2
+    pointSize = (1.35*recording['config']['minObjectGoalDist'] * localToPlt)**2
     plt.scatter(initialGoalPos[0], initialGoalPos[1], s=pointSize, facecolors='none', edgecolors='k', linestyle='--')
 
     # Plot initial and goal positions
@@ -213,8 +213,14 @@ def main():
 
     # Experiments to be performed
     experiments = [
-        {'numRepetitions': 2, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher_paper'},
-        {'numRepetitions': 2, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher'},
+        #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher'},
+        #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher'},
+        #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 15, 'map': 'reference', 'controller': 'pusher'},
+        #{'numRepetitions': 5, 'timeout': 20*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher'},
+        {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 15, 'map': 'reference', 'controller': 'pusher_paper'},
+        {'numRepetitions': 5, 'timeout': 20*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher_paper'},
     ]
 
     # Recording of each experiment
@@ -236,7 +242,7 @@ def main():
             # Run repetition
             finishRepetition = False
             currRepetitionTime = 0.0
-            data = {"success": False, "time": 0, "path": []}
+            data = {"success": False, "time": 0, "distance": 0, "path": []}
             while not finishRepetition:
                 if sup.step(TIME_STEP) != -1:
                     # Advance recording time
@@ -261,25 +267,33 @@ def main():
                     goalPos = sup.getFromDef('GOAL').getField('translation').getSFVec3f()
                     dx = goalPos[0] - boxPos[0]
                     dy = goalPos[1] - boxPos[1]
-                    if sqrt(dx*dx + dy*dy) <= minObjectGoalDist:
-                        print(f'({repetition+1}/{experiment["numRepetitions"]}) Success')
+
+                    shouldStop = False
+                    distance = sqrt(dx*dx + dy*dy)
+                    if distance <= minObjectGoalDist:
+                        shouldStop = True
                         data["success"] = True
-                        data["time"] = currRepetitionTime
-                        finishRepetition = True
+                        print(f'({repetition+1}/{experiment["numRepetitions"]}) Success')
 
                     # Check timeout
                     if currRepetitionTime >= experiment["timeout"]:
-                        print(f'({repetition+1}/{experiment["numRepetitions"]}) Timeout')
+                        shouldStop = True
                         data["success"] = False
-                        data["time"] = experiment['timeout']
+                        print(f'({repetition+1}/{experiment["numRepetitions"]}) Timeout')
+
+                    if shouldStop:
+                        data["path"].append(boxPos[:2])
+                        data["time"] = currRepetitionTime
+                        data["distance"] = distance
                         finishRepetition = True
+
             # Destroy world
             destroyWorld(experiment)
             # Save repetition recording
             recording["repetitions"].append(data)
 
         # Save experiment recordings
-        filename = f'{experiment["map"]}-{experiment["controller"]}-{experiment["numRobots"]}'
+        filename = f'{experiment["map"]}-{experiment["controller"]}-{experiment["numRobots"]}_robots-{experiment["numRepetitions"]}_rep'
         filenameJson = filename + '.json'
         filenamePng = filename + '.png'
         with open(filenameJson, 'w') as outfile:

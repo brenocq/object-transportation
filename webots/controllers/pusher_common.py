@@ -297,8 +297,9 @@ def approachObject():
     minDist = 5# Minimum distance to the object to change state
     minAngle = 10# The front angle interval is [-minAngle, minAngle]
 
-    isVisible, direction = directionToObject()
-    if isVisible and canSeeGoal():
+    objectIsVisible, direction = directionToObject()
+    goalIsVisible = canSeeGoal()
+    if objectIsVisible and goalIsVisible:
         vecToMotor(dirToVec(direction))
     else:
         changeState(g.State.RANDOM_WALK)
@@ -309,8 +310,11 @@ def approachObject():
     isInFront = (direction < minAngle and direction > -minAngle) \
         or (direction > -math.pi+minAngle or direction > math.pi-minAngle)
     if dist < minDist and isInFront:
-        # Close enough to object and is looking straight at it
-        changeState(g.State.MOVE_AROUND_OBJECT)
+        if goalIsVisible:
+            # Close enough to object and is looking straight at it
+            changeState(g.State.MOVE_AROUND_OBJECT)
+        else:
+            changeState(g.State.PUSH_OBJECT)
 
 def moveAroundObject(clockwise = True):
     #----- Parameters -----#
@@ -368,9 +372,10 @@ def moveAroundObject(clockwise = True):
     #----- Output - move -----#
     vecToMotor(moveVec)
 
+    #----- Timeout -----#
     # If timer reached zero
     if moveAroundObject.timer == 0:
-        common.changeState(g.State.RANDOM_WALK)
+        changeState(g.State.RANDOM_WALK)
         moveAroundObject.timer = moveAroundObject.timeout
     moveAroundObject.timer -= g.TIME_STEP
 moveAroundObject.timeout = 1024*2*60# Timeout 2min

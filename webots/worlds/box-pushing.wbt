@@ -5,6 +5,7 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
 IMPORTABLE EXTERNPROTO "../protos/Pusher.proto"
+IMPORTABLE EXTERNPROTO "../protos/Wall.proto"
 
 WorldInfo {
   basicTimeStep 16
@@ -32,7 +33,7 @@ RectangleArena {
   wallHeight 0.05
 }
 DEF GOAL Solid {
-  translation 1.05154 0.91082 0.05
+  translation 1 1 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -52,7 +53,7 @@ DEF GOAL Solid {
   }
 }
 DEF BOX Solid {
-  translation -1.07 -1.02 0.05
+  translation -1 -1 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -70,57 +71,6 @@ DEF BOX Solid {
   physics Physics {
     density -1
     mass 1
-    damping Damping {
-      linear 0.99
-      angular 0.99
-    }
-  }
-}
-DEF BOX Solid {
-  translation -0.5 -0.5 0.11
-  rotation 0 1 0 0
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0 0 0
-        roughness 1
-        metalness 0
-      }
-      geometry DEF BOX_GEOMETRY Box {
-        size 2 0.1 0.2
-      }
-    }
-  ]
-  name "wall(0)"
-  boundingObject USE BOX_GEOMETRY
-  physics Physics {
-    density -1
-    mass 100
-    damping Damping {
-      linear 0.99
-      angular 0.99
-    }
-  }
-}
-DEF BOX Solid {
-  translation 0.5 0.54 0.11
-  children [
-    Shape {
-      appearance PBRAppearance {
-        baseColor 0 0 0
-        roughness 1
-        metalness 0
-      }
-      geometry DEF BOX_GEOMETRY Box {
-        size 2 0.1 0.2
-      }
-    }
-  ]
-  name "wall(1)"
-  boundingObject USE BOX_GEOMETRY
-  physics Physics {
-    density -1
-    mass 100
     damping Damping {
       linear 0.99
       angular 0.99

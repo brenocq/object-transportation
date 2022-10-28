@@ -368,6 +368,14 @@ def moveAroundObject(clockwise = True):
     #----- Output - move -----#
     vecToMotor(moveVec)
 
+    # If timer reached zero
+    if moveAroundObject.timer == 0:
+        common.changeState(g.State.RANDOM_WALK)
+        moveAroundObject.timer = moveAroundObject.timeout
+    moveAroundObject.timer -= g.TIME_STEP
+moveAroundObject.timeout = 1024*2*60# Timeout 2min
+moveAroundObject.timer = moveAroundObject.timeout
+
 def pushObject():
     isFree, direction, _ = freeDirectionToObject()
     dist = distanceToObject()

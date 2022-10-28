@@ -103,19 +103,11 @@ def moveAroundObject():
     # Move around object
     common.moveAroundObject(moveAroundObject.clockwise)
 
-    # If timer reached zero
-    if moveAroundObject.timer == 0:
-        common.changeState(g.State.RANDOM_WALK)
-    moveAroundObject.timer -= g.TIME_STEP
-
-    # Reset direction/timer when leave the state
+    # Reset direction when leave the state
     if g.state != g.State.MOVE_AROUND_OBJECT:
         moveAroundObject.directionWasChosen = False
-        moveAroundObject.timer = moveAroundObject.timeout
 moveAroundObject.directionWasChosen = False
 moveAroundObject.clockwise = True
-moveAroundObject.timeout = 1024*2*60# Timeout 2min
-moveAroundObject.timer = moveAroundObject.timeout
 
 def pushObject():
     common.pushObject()
@@ -149,16 +141,16 @@ def beAGoal():
             g.rightMotor.setVelocity(0.0)
 
         if common.canSeeObject() and common.distanceToObject() == 0:
-            print("Too close to object, not a goal anymore")
+            print("[beAGoal] Too close to object, not a goal anymore")
             goRandomWalk = True
 
         if common.canSeeGoal():
-            print("Can see another goal, not a goal anymore")
+            print("[beAGoal] Can see another goal, not a goal anymore")
             goRandomWalk = True
 
         # If timer reached zero, can't find goal anymore
         if beAGoal.timer == 0:
-            print("Timer timeout")
+            print("[beAGoal] Timer timeout")
             goRandomWalk = True
         beAGoal.timer -= g.TIME_STEP
 

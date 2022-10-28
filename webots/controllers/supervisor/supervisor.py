@@ -25,7 +25,7 @@ maps = {
         'goal': {'pos': [-1.0, 1.0]},
         'object': {'pos': [-1.0, -1.0]},
         'walls': [
-            {'pos': [-0.5, 0.0], 'size': [2.0, 0.1]}
+            {'pos': [-0.5, 0.0], 'size': [2.0, 0.8]}
         ]
     },
     'middle': {
@@ -67,7 +67,14 @@ def createWorld(experiment):
 
     # Create walls
     for i in range(len(maps[experiment["map"]]["walls"])):
-        pass
+        wall = maps[experiment["map"]]["walls"][i]
+        wallDef = "WALL"+str(i)
+        wallString = f"""DEF {wallDef} Wall {{
+                            name "wall({i})"
+                            translation {wall['pos'][0]} {wall['pos'][1]} 0.11
+                            size {wall['size'][0]} {wall['size'][1]} 0.2
+                        }}"""
+        sup.getRoot().getField('children').importMFNodeFromString(-1, wallString)
 
     # Create robots
     gap = ROBOT_RADIUS
@@ -94,6 +101,19 @@ def createWorld(experiment):
             if sqrt(dx*dx + dy*dy) < boxSize[0] * sqrt(2.0) * 0.5 + ROBOT_RADIUS + gap:
                 freePosition = False
                 continue
+
+            # Check wall collision
+            for wall in maps[experiment["map"]]["walls"]:
+                wallMinX = wall['pos'][0] - wall['size'][0] * 0.5
+                wallMaxX = wall['pos'][0] + wall['size'][0] * 0.5
+                wallMinY = wall['pos'][1] - wall['size'][1] * 0.5
+                wallMaxY = wall['pos'][1] + wall['size'][1] * 0.5
+                if robotPos[0] + ROBOT_RADIUS + gap >= wallMinX and \
+                        robotPos[0] - ROBOT_RADIUS - gap <= wallMaxX and \
+                        robotPos[1] + ROBOT_RADIUS + gap >= wallMinY and \
+                        robotPos[1] - ROBOT_RADIUS - gap <= wallMaxY:
+                    freePosition = False
+                    continue
 
             # Check robot collision
             for otherPos in robotsPos:
@@ -137,7 +157,6 @@ def handleRobotMessage():
     msg = struct.unpack("I 1s",msg) # unpack the first element of the mssage
     num = msg[0]
     color = msg[1]
-    print('PUSHER'+str(num), 'COLOR=', color)
 
     # get the pusher and the color field
     pusher = sup.getFromDef('PUSHER'+str(num))
@@ -153,6 +172,39 @@ def handleRobotMessage():
 
     receiver.nextPacket() # remove the message at the head of the queue
 
+def saveImageFromRecording(recording, filename):
+    initialBoxPos = recording['config']['map']['object']['pos']
+    initialGoalPos = recording['config']['map']['goal']['pos']
+    boxPaths = []
+    for repetition in recording['repetitions']:
+        path = {"x": [], "y": []}
+        for pos in repetition["path"]:
+            path["x"].append(pos[0])
+            path["y"].append(pos[1])
+        boxPaths.append(path)
+
+    # Plot config
+    figSize = 5
+    localToPlt = figSize * 0.4 * 72  # 1 point = dpi / 72 pixels
+    plt.figure(figsize=[figSize, figSize])
+    ax = plt.axes([0.1, 0.1, 0.8, 0.8], xlim=(-ARENA_SIZE*0.5, ARENA_SIZE*0.5), ylim=(-ARENA_SIZE*0.5, ARENA_SIZE*0.5))
+
+    # Plot MIN_BOX_GOAL_DIST
+    pointSize = (recording['config']['minObjectGoalDist'] * localToPlt)**2
+    plt.scatter(initialGoalPos[0], initialGoalPos[1], s=pointSize, facecolors='none', edgecolors='k', linestyle='--')
+
+    # Plot initial and goal positions
+    plt.scatter(initialBoxPos[0], initialBoxPos[1], s=30, color='r')
+    plt.scatter(initialGoalPos[0], initialGoalPos[1], s=50, color='g')
+
+    # Plot paths
+    for i, path in enumerate(boxPaths):
+        plt.plot(path["x"], path["y"])
+
+    plt.title(f'Map {recording["config"]["map"]["name"]} - {recording["config"]["numRobots"]} {recording["config"]["controller"]}')
+    plt.savefig(filename)
+
+
 def main():
     # Calculate min distance between goal and object
     goalRadius = sup.getFromDef('GOAL_GEOMETRY').getField('radius').getSFFloat()
@@ -161,22 +213,21 @@ def main():
 
     # Experiments to be performed
     experiments = [
-        {'numRepetitions': 2, 'timeout': 10*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher_paper'},
-        {'numRepetitions': 0, 'timeout': 10*60,'numRobots': 10, 'map': 'reference', 'controller': 'pusher_paper'},
-        {'numRepetitions': 0, 'timeout': 10*60,'numRobots': 15, 'map': 'reference', 'controller': 'pusher_paper'},
-        {'numRepetitions': 0, 'timeout': 10*60,'numRobots': 20, 'map': 'reference', 'controller': 'pusher_paper'},
+        {'numRepetitions': 2, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher_paper'},
+        {'numRepetitions': 2, 'timeout': 20*60,'numRobots': 5, 'map': 'reference', 'controller': 'pusher'},
     ]
 
     # Recording of each experiment
-    recordings = []
     for experiment in experiments:
         recording = {'config': {}, 'repetitions': []} # Recorded data
         recording['config']['numRepetitions'] = experiment['numRepetitions']
         recording['config']['numRobots'] = experiment['numRobots']
+        recording['config']['controller'] = experiment['controller']
+        recording['config']['map'] = maps[experiment['map']]
+        recording['config']['map']['name'] = experiment['map']
         recording['config']['timeout'] = experiment['timeout']
         recording['config']['timeStep'] = TIME_STEP
         recording['config']['minObjectGoalDist'] = minObjectGoalDist
-        recording['config']['map'] = maps[experiment['map']]
 
         for repetition in range(experiment["numRepetitions"]):
             # Create world
@@ -185,7 +236,7 @@ def main():
             # Run repetition
             finishRepetition = False
             currRepetitionTime = 0.0
-            data = {"success": False, "path": []}
+            data = {"success": False, "time": 0, "path": []}
             while not finishRepetition:
                 if sup.step(TIME_STEP) != -1:
                     # Advance recording time
@@ -211,28 +262,32 @@ def main():
                     dx = goalPos[0] - boxPos[0]
                     dy = goalPos[1] - boxPos[1]
                     if sqrt(dx*dx + dy*dy) <= minObjectGoalDist:
-                        print("Finished repetition (success)")
+                        print(f'({repetition+1}/{experiment["numRepetitions"]}) Success')
                         data["success"] = True
+                        data["time"] = currRepetitionTime
                         finishRepetition = True
 
                     # Check timeout
                     if currRepetitionTime >= experiment["timeout"]:
-                        print("Finished repetition (timeout failed)")
+                        print(f'({repetition+1}/{experiment["numRepetitions"]}) Timeout')
                         data["success"] = False
+                        data["time"] = experiment['timeout']
                         finishRepetition = True
             # Destroy world
             destroyWorld(experiment)
             # Save repetition recording
             recording["repetitions"].append(data)
 
-        # Save experiment recording
-        recordings.append(recording)
+        # Save experiment recordings
+        filename = f'{experiment["map"]}-{experiment["controller"]}-{experiment["numRobots"]}'
+        filenameJson = filename + '.json'
+        filenamePng = filename + '.png'
+        with open(filenameJson, 'w') as outfile:
+            json.dump(recording, outfile)
+        print(f'Saved recording to {filenameJson}')
+        saveImageFromRecording(recording, filenamePng)
+        print(f'Saved image to {filenamePng}')
 
-    # Save experiment recordings
-    filename = 'experiment_result-'+str(int(datetime.datetime.now().timestamp()))+'.json'
-    with open(filename, 'w') as outfile:
-        json.dump(recordings, outfile)
-    print(f'Saved recording to {filename}')
 
 if __name__ == '__main__':
     main()

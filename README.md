@@ -1,4 +1,4 @@
-# cooperative-transport
+# box-pushing
 Cooperative multi-robot object transport with obstacle avoidance
 
 "New" Implementation

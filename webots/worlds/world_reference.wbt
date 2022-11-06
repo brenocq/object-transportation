@@ -5,13 +5,14 @@ EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/project
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/objects/floors/protos/RectangleArena.proto"
 EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2022b/projects/appearances/protos/Parquetry.proto"
 IMPORTABLE EXTERNPROTO "../protos/Pusher.proto"
+IMPORTABLE EXTERNPROTO "../protos/Wall.proto"
 
 WorldInfo {
   basicTimeStep 16
 }
 Viewpoint {
-  orientation -0.5773502691896258 0.5773502691896258 0.5773502691896258 2.0944
-  position 5.31966011929193e-05 2.4759725860768995e-06 7.356121128180397
+  orientation -0.5703696319810653 0.5685420342652442 0.5928224339440286 2.0588625155986175
+  position 0.006728034943671928 -0.23548933309844228 4.5051335700107025
 }
 TexturedBackground {
   texture "noon_cloudy_mountains"
@@ -32,7 +33,7 @@ RectangleArena {
   wallThickness 0.02
 }
 DEF GOAL Solid {
-  translation -0.81 -0.91 0.05
+  translation 1 1 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -52,9 +53,7 @@ DEF GOAL Solid {
   }
 }
 DEF BOX Solid {
-  translation 0.5 0.5 0.05
-  rotation 0 1 0 0
-  scale 0.7 0.7 0.7
+  translation -1 -1 0.05
   children [
     Shape {
       appearance PBRAppearance {
@@ -63,12 +62,14 @@ DEF BOX Solid {
         metalness 0
       }
       geometry DEF BOX_GEOMETRY Box {
-        size 0.4 0.4 0.2
+        size 0.4 0.4 0.1
       }
     }
   ]
   name "box"
-  boundingObject USE BOX_GEOMETRY
+  boundingObject DEF BOX_GEOMETRY Box {
+    size 0.4 0.4 0.1
+  }
   physics Physics {
     density -1
     mass 2.5
@@ -82,9 +83,6 @@ Robot {
   children [
     Receiver {
       name "radio receiver"
-    }
-    Emitter {
-      channel 1
     }
   ]
   name "supervisor"

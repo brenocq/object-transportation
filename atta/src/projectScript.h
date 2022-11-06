@@ -13,6 +13,8 @@ namespace scr = atta::script;
 class ProjectScript : public scr::ProjectScript {
   public:
     //---------- Simulation ----------//
+    void onLoad() override;
+    void onUnload() override;
     void onStart() override;
     void onStop() override;
     void onUpdateBefore(float dt) override;
@@ -21,8 +23,11 @@ class ProjectScript : public scr::ProjectScript {
     void onUIRender() override;
 
   private:
-    void createMap();
-    void destroyMap();
+    // Map handling
+    void selectMap(std::string mapName);
+    void resetMap();
+    // Pusher handling
+    void randomizePushers();
 
     std::string _currentMap;
 };

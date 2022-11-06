@@ -5,7 +5,19 @@
 // By Breno Cunha Queiroz
 //--------------------------------------------------
 #include "projectScript.h"
+#include "common.h"
 #include "imgui.h"
+
+#include <atta/component/components/boxCollider2D.h>
+#include <atta/component/components/material.h>
+#include <atta/component/components/mesh.h>
+#include <atta/component/components/name.h>
+#include <atta/component/components/relationship.h>
+#include <atta/component/components/rigidBody2D.h>
+#include <atta/component/components/transform.h>
+#include <atta/utils/config.h>
+
+namespace cmp = atta::component;
 
 struct WallInfo {
     atta::vec2 pos;
@@ -57,7 +69,11 @@ std::map<std::string, MapInfo> maps = {
     },
 };
 
-void ProjectScript::onStart() { _map = "reference"; }
+void ProjectScript::onLoad() { selectMap("Reference"); }
+
+void ProjectScript::onUnload() { resetMap(); }
+
+void ProjectScript::onStart() { randomizePushers(); }
 
 void ProjectScript::onStop() {}
 
@@ -68,14 +84,13 @@ void ProjectScript::onUIRender() {
     {
         static std::vector<std::string> options = {"Reference", "Middle", "Corner", "2 Corners"};
 
-        ImGui::SetNextItemWidth(40.0f);
-        if (ImGui::BeginCombo((_currentMap + "##ComboMap").c_str(), _currentMap.c_str())) {
+        ImGui::SetNextItemWidth(100.0f);
+        if (ImGui::BeginCombo("Map##ComboMap", _currentMap.c_str())) {
             for (int i = 0; i < options.size(); i++) {
                 const bool selected = (options[i] == _currentMap);
                 if (ImGui::Selectable(options[i].c_str(), selected)) {
-                    destroyMap(_currentMap);
                     _currentMap = options[i];
-                    createMap(_currentMap);
+                    selectMap(_currentMap);
                 }
                 if (selected)
                     ImGui::SetItemDefaultFocus();
@@ -83,12 +98,117 @@ void ProjectScript::onUIRender() {
             ImGui::EndCombo();
         }
     }
+
+    if (ImGui::Button("Randomize pushers"))
+        randomizePushers();
 }
 
-void ProjectScript::createMap(std::string mapName) {
+void ProjectScript::selectMap(std::string mapName) {
+    resetMap();
     MapInfo map = maps[mapName];
-    object.getComponent<cmp::Transform>()->position = map.objectPos;
-    goal.getComponent<cmp::Transform>()->position = map.goalPos;
+
+    // Move goal/object
+    cmp::Transform* ot = object.get<cmp::Transform>();
+    cmp::Transform* gt = goal.get<cmp::Transform>();
+    ot->position = atta::vec3(map.objectPos, ot->position.z);
+    gt->position = atta::vec3(map.goalPos, gt->position.z);
+
+    // Create obstacles
+    cmp::Relationship* obstR = obstacles.get<cmp::Relationship>();
+    for (WallInfo wi : map.walls) {
+        cmp::Entity wall = cmp::createEntity();
+        cmp::Transform* t = wall.add<cmp::Transform>();
+        t->position = atta::vec3(wi.pos, 0.1f);
+        t->scale = atta::vec3(wi.size, 0.2f);
+        wall.add<cmp::Mesh>()->set("meshes/cube.obj");
+        wall.add<cmp::Material>()->set("obstacle");
+        wall.add<cmp::Name>()->set("Map wall");
+        wall.add<cmp::RigidBody2D>()->type = cmp::RigidBody2D::Type::STATIC;
+        wall.add<cmp::BoxCollider2D>();
+        obstR->addChild(obstacles, wall);
+    }
+
+    _currentMap = mapName;
+
+    if (atta::Config::getState() != atta::Config::State::IDLE)
+        randomizePushers();
 }
 
-void ProjectScript::destroyMap(std::string mapName) {}
+void ProjectScript::resetMap() {
+    // Move to goal/obstacle to center
+    cmp::Transform* ot = object.get<cmp::Transform>();
+    cmp::Transform* gt = goal.get<cmp::Transform>();
+    ot->position = atta::vec3(0.0f, 0.0f, ot->position.z);
+    gt->position = atta::vec3(0.0f, 0.0f, gt->position.z);
+
+    // Delete created obstacles
+    cmp::Relationship* obstR = obstacles.get<cmp::Relationship>();
+    std::vector<cmp::EntityId> obst = obstR->getChildren();
+    for (unsigned i = 4; i < obst.size(); i++)
+        cmp::deleteEntity(obst[i]);
+}
+
+void ProjectScript::randomizePushers() {
+    constexpr float worldSize = 2.9f;
+    const float pusherRadius = pusherProto.get<cmp::Transform>()->scale.x;
+    const float gap = pusherRadius;
+    atta::vec2 goalPos = maps[_currentMap].goalPos;
+    float goalRadius = goal.get<cmp::Transform>()->scale.x;
+    atta::vec2 objectPos = maps[_currentMap].objectPos;
+    atta::vec2 objectSize = object.get<cmp::Transform>()->scale;
+
+    std::vector<WallInfo> walls = maps[_currentMap].walls;
+    std::vector<atta::vec2> pusherPositions;
+    // For each pusher
+    for (cmp::Entity pusher : cmp::getFactory(pusherProto)->getClones()) {
+        bool freePosition = false;
+        atta::vec2 pos(0.0f);
+        while (!freePosition) {
+            freePosition = true;
+            // Get random position
+            float rx = rand() / float(RAND_MAX) * worldSize - worldSize * 0.5f;
+            float ry = rand() / float(RAND_MAX) * worldSize - worldSize * 0.5f;
+            pos = {rx, ry};
+
+            // Check goal collision
+            float dist = (goalPos - pos).length();
+            if (dist < goalRadius + pusherRadius + gap) {
+                freePosition = false;
+                continue;
+            }
+
+            // Check object collision
+            dist = (pos - objectPos).length();
+            if (dist < objectSize.x * sqrt(2) * 0.5 + pusherRadius + gap) {
+                freePosition = false;
+                continue;
+            }
+
+            // Check wall collision
+            for (WallInfo wall : walls) {
+                float wallMinX = wall.pos.x - wall.size.x * 0.5;
+                float wallMaxX = wall.pos.x + wall.size.x * 0.5;
+                float wallMinY = wall.pos.y - wall.size.y * 0.5;
+                float wallMaxY = wall.pos.y + wall.size.y * 0.5;
+                if (pos.x + pusherRadius + gap >= wallMinX && pos.x - pusherRadius - gap <= wallMaxX && pos.y + pusherRadius + gap >= wallMinY &&
+                    pos.y - pusherRadius - gap <= wallMaxY) {
+                    freePosition = false;
+                    continue;
+                }
+            }
+
+            // Check robot collision
+            for (atta::vec2 o : pusherPositions) {
+                dist = (o - pos).length();
+                if (dist < 2 * pusherRadius + gap) {
+                    freePosition = false;
+                    continue;
+                }
+            }
+        }
+        auto t = pusher.get<cmp::Transform>();
+        t->position = atta::vec3(pos, t->position.z);
+        t->orientation.set2DAngle(rand() / float(RAND_MAX) * M_PI * 2);
+        pusherPositions.push_back(pos);
+    }
+}

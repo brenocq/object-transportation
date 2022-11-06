@@ -10,6 +10,8 @@
 
 namespace cmp = atta::component;
 
+cmp::Entity obstacles(1);
+cmp::Entity pusherProto(7);
 cmp::Entity object(8);
 cmp::Entity goal(9);
 

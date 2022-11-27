@@ -111,7 +111,9 @@ void ProjectScript::selectMap(std::string mapName) {
     cmp::Transform* ot = object.get<cmp::Transform>();
     cmp::Transform* gt = goal.get<cmp::Transform>();
     ot->position = atta::vec3(map.objectPos, ot->position.z);
+    ot->orientation.set2DAngle(0.0f);
     gt->position = atta::vec3(map.goalPos, gt->position.z);
+    gt->orientation.set2DAngle(0.0f);
 
     // Create obstacles
     cmp::Relationship* obstR = obstacles.get<cmp::Relationship>();
@@ -120,6 +122,7 @@ void ProjectScript::selectMap(std::string mapName) {
         cmp::Transform* t = wall.add<cmp::Transform>();
         t->position = atta::vec3(wi.pos, 0.1f);
         t->scale = atta::vec3(wi.size, 0.2f);
+        t->orientation.set2DAngle(0.0f);
         wall.add<cmp::Mesh>()->set("meshes/cube.obj");
         wall.add<cmp::Material>()->set("obstacle");
         wall.add<cmp::Name>()->set("Map wall");
@@ -143,7 +146,7 @@ void ProjectScript::resetMap() {
 
     // Delete created obstacles
     cmp::Relationship* obstR = obstacles.get<cmp::Relationship>();
-    std::vector<cmp::EntityId> obst = obstR->getChildren();
+    std::vector<cmp::Entity> obst = obstR->getChildren();
     for (unsigned i = 4; i < obst.size(); i++)
         cmp::deleteEntity(obst[i]);
 }
@@ -208,7 +211,7 @@ void ProjectScript::randomizePushers() {
         }
         auto t = pusher.get<cmp::Transform>();
         t->position = atta::vec3(pos, t->position.z);
-        t->orientation.set2DAngle(rand() / float(RAND_MAX) * M_PI * 2);
+        //t->orientation.set2DAngle(rand() / float(RAND_MAX) * M_PI * 2);
         pusherPositions.push_back(pos);
     }
 }

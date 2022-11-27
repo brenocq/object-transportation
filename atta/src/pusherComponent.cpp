@@ -11,7 +11,7 @@ cmp::ComponentDescription& cmp::TypedComponentRegistry<PusherComponent>::getDesc
     static cmp::ComponentDescription desc = {
         "Pusher",
         {
-            {AttributeType::UINT8,
+            {AttributeType::UINT32,
              offsetof(PusherComponent, state),
              "state",
              {},
@@ -19,6 +19,11 @@ cmp::ComponentDescription& cmp::TypedComponentRegistry<PusherComponent>::getDesc
              {},
              {"RANDOM_WALK", "APPROACH_OBJECT", "MOVE_AROUND_OBJECT", "PUSH_OBJECT", "BE_A_GOAL"}},
             {AttributeType::FLOAT32, offsetof(PusherComponent, timer), "timer"},
+            {AttributeType::FLOAT32, offsetof(PusherComponent, lastFrameTime), "lastFrameTime"},
+            {AttributeType::FLOAT32, offsetof(PusherComponent, objectDirection), "objectDirection"},
+            {AttributeType::FLOAT32, offsetof(PusherComponent, objectDistance), "objectDistance"},
+            {AttributeType::FLOAT32, offsetof(PusherComponent, goalDirection), "goalDirection"},
+            {AttributeType::FLOAT32, offsetof(PusherComponent, goalDistance), "goalDistance"},
         },
         // Max instances
         1024,

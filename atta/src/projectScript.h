@@ -16,8 +16,7 @@ class ProjectScript : public scr::ProjectScript {
     void onLoad() override;
     void onUnload() override;
     void onStart() override;
-    void onStop() override;
-    void onUpdateBefore(float dt) override;
+    void onAttaLoop() override;
 
     //---------- UI ----------//
     void onUIRender() override;
@@ -28,6 +27,11 @@ class ProjectScript : public scr::ProjectScript {
     void resetMap();
     // Pusher handling
     void randomizePushers();
+
+    //---------- UI ----------//
+    void uiControl();
+    void uiPusherInspector();
+    void drawerPusherLines();
 
     std::string _currentMap;
 };

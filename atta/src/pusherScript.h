@@ -6,6 +6,7 @@
 //--------------------------------------------------
 #ifndef PUSHER_SCRIPT_H
 #define PUSHER_SCRIPT_H
+#include "common.h"
 #include "pusherComponent.h"
 #include <atta/component/components/camera.h>
 #include <atta/script/script.h>
@@ -28,16 +29,7 @@ class PusherScript : public scr::Script {
     // Low level functions
     void changeState(PusherComponent::State state);
     void move(atta::vec2 direction);
-
-    struct Color {
-        uint8_t r;
-        uint8_t g;
-        uint8_t b;
-        Color() = default;
-        Color(uint8_t red, uint8_t green, uint8_t blue) : r(red), g(green), b(blue) {}
-        bool operator==(const Color& o) const { return (o.r == r) && (o.g == g) && (o.b == b); }
-        bool operator!=(const Color& o) const { return !(o == *this); }
-    };
+    atta::vec2 dirToVec(float dir);
 
     float calcDirection(unsigned y, Color color);
     void processCameras();
@@ -47,9 +39,7 @@ class PusherScript : public scr::Script {
 
     PusherComponent* _pusher;
     std::array<cmp::Camera*, 4> _cams;
-
-    static const PusherScript::Color goalColor;
-    static const PusherScript::Color objectColor;
+    std::array<float, 8> _ir;
 };
 
 ATTA_REGISTER_SCRIPT(PusherScript)

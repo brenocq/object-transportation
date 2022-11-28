@@ -6,8 +6,9 @@
 //--------------------------------------------------
 #include "projectScript.h"
 #include "common.h"
-#include "imgui.h"
+#include "pusherComponent.h"
 
+#include "imgui.h"
 #include <atta/component/components/boxCollider2D.h>
 #include <atta/component/components/material.h>
 #include <atta/component/components/mesh.h>
@@ -15,9 +16,13 @@
 #include <atta/component/components/relationship.h>
 #include <atta/component/components/rigidBody2D.h>
 #include <atta/component/components/transform.h>
+#include <atta/graphics/drawer.h>
+#include <atta/sensor/interface.h>
 #include <atta/utils/config.h>
 
+namespace gfx = atta::graphics;
 namespace cmp = atta::component;
+namespace sns = atta::sensor;
 
 struct WallInfo {
     atta::vec2 pos;
@@ -75,32 +80,19 @@ void ProjectScript::onUnload() { resetMap(); }
 
 void ProjectScript::onStart() { randomizePushers(); }
 
-void ProjectScript::onStop() {}
-
-void ProjectScript::onUpdateBefore(float dt) {}
+void ProjectScript::onAttaLoop() {
+    drawerPusherLines() ;
+}
 
 void ProjectScript::onUIRender() {
-    //---------- Map combo ----------//
+    ImGui::SetNextWindowSize(ImVec2(310, 300), ImGuiCond_Once);
+    ImGui::Begin("Project");
     {
-        static std::vector<std::string> options = {"Reference", "Middle", "Corner", "2 Corners"};
-
-        ImGui::SetNextItemWidth(100.0f);
-        if (ImGui::BeginCombo("Map##ComboMap", _currentMap.c_str())) {
-            for (int i = 0; i < options.size(); i++) {
-                const bool selected = (options[i] == _currentMap);
-                if (ImGui::Selectable(options[i].c_str(), selected)) {
-                    _currentMap = options[i];
-                    selectMap(_currentMap);
-                }
-                if (selected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
+        uiControl();
+        ImGui::Separator();
+        uiPusherInspector();
     }
-
-    if (ImGui::Button("Randomize pushers"))
-        randomizePushers();
+    ImGui::End();
 }
 
 void ProjectScript::selectMap(std::string mapName) {
@@ -211,7 +203,9 @@ void ProjectScript::randomizePushers() {
         }
         auto t = pusher.get<cmp::Transform>();
         t->position = atta::vec3(pos, t->position.z);
-        //t->orientation.set2DAngle(rand() / float(RAND_MAX) * M_PI * 2);
+        t->orientation.set2DAngle(rand() / float(RAND_MAX) * M_PI * 2);
         pusherPositions.push_back(pos);
     }
 }
+
+#include "projectScriptUI.cpp"

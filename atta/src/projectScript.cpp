@@ -78,10 +78,31 @@ void ProjectScript::onLoad() { selectMap("Reference"); }
 
 void ProjectScript::onUnload() { resetMap(); }
 
-void ProjectScript::onStart() { randomizePushers(); }
+void ProjectScript::onStart() {
+    randomizePushers();
+
+    // Make sure all camera images are captured at the same time
+    for (cmp::Entity pusher : cmp::getFactory(pusherProto)->getClones()) {
+        cmp::Entity cams = pusher.getChild(0);
+        auto cam0 = cams.getChild(0).get<cmp::CameraSensor>();
+        auto cam1 = cams.getChild(1).get<cmp::CameraSensor>();
+        auto cam2 = cams.getChild(2).get<cmp::CameraSensor>();
+        auto cam3 = cams.getChild(3).get<cmp::CameraSensor>();
+        cam3->captureTime = cam2->captureTime = cam1->captureTime = cam0->captureTime;
+    }
+}
+
+void ProjectScript::onStop() { selectMap(_currentMap); }
 
 void ProjectScript::onAttaLoop() {
-    drawerPusherLines() ;
+    if (atta::Config::getState() == atta::Config::State::RUNNING) {
+        atta::vec2 objPos = atta::vec2(object.get<cmp::Transform>()->position);
+        if (_objectPath.empty() || length(objPos - _objectPath.back()) >= 0.01)
+            _objectPath.push_back(objPos);
+    }
+
+    drawerPusherLines();
+    drawerPathLines();
 }
 
 void ProjectScript::onUIRender() {
@@ -97,6 +118,7 @@ void ProjectScript::onUIRender() {
 
 void ProjectScript::selectMap(std::string mapName) {
     resetMap();
+    _objectPath.clear();
     MapInfo map = maps[mapName];
 
     // Move goal/object

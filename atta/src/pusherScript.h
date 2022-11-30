@@ -8,7 +8,7 @@
 #define PUSHER_SCRIPT_H
 #include "common.h"
 #include "pusherComponent.h"
-#include <atta/component/components/camera.h>
+#include <atta/component/components/cameraSensor.h>
 #include <atta/script/script.h>
 
 namespace cmp = atta::component;
@@ -38,7 +38,7 @@ class PusherScript : public scr::Script {
     float _dt;
 
     PusherComponent* _pusher;
-    std::array<cmp::Camera*, 4> _cams;
+    std::array<cmp::CameraSensor*, 4> _cams;
     std::array<float, 8> _ir;
 };
 

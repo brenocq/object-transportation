@@ -12,13 +12,14 @@
 
 void PusherScript::update(cmp::Entity entity, float dt) {
     PROFILE();
+    //PROFILE_NAME("PusherScript::update("+std::to_string(entity.getId())+")");
     _entity = entity;
     _dt = dt;
     cmp::Entity cameras = _entity.getChild(0);
-    _cams[0] = cameras.getChild(0).get<cmp::Camera>();
-    _cams[1] = cameras.getChild(1).get<cmp::Camera>();
-    _cams[2] = cameras.getChild(2).get<cmp::Camera>();
-    _cams[3] = cameras.getChild(3).get<cmp::Camera>();
+    _cams[0] = cameras.getChild(0).get<cmp::CameraSensor>();
+    _cams[1] = cameras.getChild(1).get<cmp::CameraSensor>();
+    _cams[2] = cameras.getChild(2).get<cmp::CameraSensor>();
+    _cams[3] = cameras.getChild(3).get<cmp::CameraSensor>();
     _pusher = _entity.get<PusherComponent>();
     _pusher->timer += dt;
 
@@ -59,7 +60,7 @@ void PusherScript::randomWalk() {
         _pusher->randomWalkAux = b;
     move(dirToVec(_pusher->randomWalkAux));
 
-    if (!_pusher->canSeeGoal() && _cams[0]->frameTime > 0) {
+    if (!_pusher->canSeeGoal() && _cams[0]->captureTime > 0) {
         changeState(PusherComponent::BE_A_GOAL);
         return;
     }
@@ -223,7 +224,7 @@ atta::vec2 PusherScript::dirToVec(float dir) { return {std::cos(dir), std::sin(d
 
 float PusherScript::calcDirection(unsigned y, Color color) {
     // Create row of colors
-    std::array<const uint8_t*, 4> images = {_cams[0]->getFrame(), _cams[1]->getFrame(), _cams[2]->getFrame(), _cams[3]->getFrame()};
+    std::array<const uint8_t*, 4> images = {_cams[0]->getImage(), _cams[1]->getImage(), _cams[2]->getImage(), _cams[3]->getImage()};
     const unsigned w = _cams[0]->width;
     const unsigned h = _cams[0]->height;
     std::vector<Color> row(w * 4);
@@ -303,20 +304,10 @@ float PusherScript::calcDirection(unsigned y, Color color) {
 void PusherScript::processCameras() {
     PROFILE();
 
-    // If there is no image available yet, initialize with NAN
-    if (_cams[0]->frameTime == 0) {
-        // Initialize values as default
-        _pusher->objectDirection = NAN;
-        _pusher->objectDistance = NAN;
-        _pusher->goalDirection = NAN;
-        _pusher->goalDistance = NAN;
-        return;
-    }
-
     // If it is not a new image, do not process
-    if (_cams[0]->frameTime == _pusher->lastFrameTime)
+    if (_cams[0]->captureTime == _pusher->lastFrameTime)
         return;
-    _pusher->lastFrameTime = _cams[0]->frameTime;
+    _pusher->lastFrameTime = _cams[0]->captureTime;
 
     // Initialize values as default
     _pusher->objectDirection = NAN;
@@ -324,8 +315,12 @@ void PusherScript::processCameras() {
     _pusher->goalDirection = NAN;
     _pusher->goalDistance = NAN;
 
+    // If there is no image available yet, do not continue
+    if (_cams[0]->captureTime < 0.0f)
+        return;
+
     // Process images
-    std::array<const uint8_t*, 4> images = {_cams[0]->getFrame(), _cams[1]->getFrame(), _cams[2]->getFrame(), _cams[3]->getFrame()};
+    std::array<const uint8_t*, 4> images = {_cams[0]->getImage(), _cams[1]->getImage(), _cams[2]->getImage(), _cams[3]->getImage()};
     const unsigned w = _cams[0]->width;
     const unsigned h = _cams[0]->height;
     for (int y = h * 0.8; y >= 0; y--) // Scan from bottom to top (ignore lower pixels where robot is visible)

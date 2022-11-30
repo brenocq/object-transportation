@@ -39,22 +39,34 @@ void ProjectScript::uiPusherInspector() {
 
             // Get camera components
             cmp::Entity cameras = clone.getChild(0);
-            std::array<cmp::Camera*, 4> cams;
+            std::array<cmp::CameraSensor*, 4> cams;
             for (unsigned i = 0; i < cams.size(); i++)
-                cams[i] = cameras.getChild(i).get<cmp::Camera>();
+                cams[i] = cameras.getChild(i).get<cmp::CameraSensor>();
 
             // Get sensor module camera info
             std::vector<sns::CameraInfo>& snsCams = sns::getCameraInfos();
 
             // Show camera images
             for (auto cam : cams)
-                for (uint32_t i = 0; i < snsCams.size(); i++)
-                    if (snsCams[i].component == cam) {
-                        ImGui::Image(snsCams[i].renderer->getImGuiTexture(), ImVec2(75, 75));
-                        if (cam != cams.back())
-                            ImGui::SameLine(0.0f, 0.0f);
-                    }
+                if (cam->captureTime >= 0.0f)
+                    for (uint32_t i = 0; i < snsCams.size(); i++)
+                        if (snsCams[i].component == cam) {
+                            ImGui::Image(snsCams[i].renderer->getImGuiTexture(), ImVec2(75, 75));
+                            if (cam != cams.back())
+                                ImGui::SameLine(0.0f, 0.0f);
+                        }
         }
+    }
+}
+
+void ProjectScript::drawerPathLines() {
+    gfx::Drawer::clear("path");
+    for (int i = 0; i < int(_objectPath.size()) - 1; i++) {
+        gfx::Drawer::Line line;
+        line.p0 = atta::vec3(_objectPath[i], 0.1f);
+        line.p1 = atta::vec3(_objectPath[i + 1], 0.1f);
+        line.c0 = line.c1 = {objectColor.r / 255.0f, objectColor.g / 255.0f, objectColor.b / 255.0f, 1};
+        gfx::Drawer::add(line, "path");
     }
 }
 

@@ -16,6 +16,7 @@ class ProjectScript : public scr::ProjectScript {
     void onLoad() override;
     void onUnload() override;
     void onStart() override;
+    void onStop() override;
     void onAttaLoop() override;
 
     //---------- UI ----------//
@@ -32,8 +33,10 @@ class ProjectScript : public scr::ProjectScript {
     void uiControl();
     void uiPusherInspector();
     void drawerPusherLines();
+    void drawerPathLines();
 
     std::string _currentMap;
+    std::vector<atta::vec2> _objectPath;
 };
 
 ATTA_REGISTER_PROJECT_SCRIPT(ProjectScript)

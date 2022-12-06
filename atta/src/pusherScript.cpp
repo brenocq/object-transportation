@@ -15,11 +15,19 @@ void PusherScript::update(cmp::Entity entity, float dt) {
     //PROFILE_NAME("PusherScript::update("+std::to_string(entity.getId())+")");
     _entity = entity;
     _dt = dt;
+
+    // Get cameras
     cmp::Entity cameras = _entity.getChild(0);
     _cams[0] = cameras.getChild(0).get<cmp::CameraSensor>();
     _cams[1] = cameras.getChild(1).get<cmp::CameraSensor>();
     _cams[2] = cameras.getChild(2).get<cmp::CameraSensor>();
     _cams[3] = cameras.getChild(3).get<cmp::CameraSensor>();
+
+    // Get infrareds
+    cmp::Entity infrareds = _entity.getChild(1);
+    for(int i = 0; i < 8; i++)
+        _ir[i] = infrareds.getChild(i).get<cmp::InfraredSensor>()->measurement;
+
     _pusher = _entity.get<PusherComponent>();
     _pusher->timer += dt;
 
@@ -88,7 +96,6 @@ void PusherScript::approachObject() {
                 changeState(PusherComponent::MOVE_AROUND_OBJECT);
             else
                 changeState(PusherComponent::PUSH_OBJECT);
-
             return;
         }
     } else
@@ -98,8 +105,8 @@ void PusherScript::approachObject() {
 void PusherScript::moveAroundObject() {
     //----- Parameters -----//
     atta::vec2 moveVec(1.0f, 0.0f); // Robot move vector (X is to the forward, Y is left)
-    const float minDist = 0.3f;     // 30cm
-    const float maxDist = 0.6f;     // 60cm
+    const float minDist = 0.1f;
+    const float maxDist = 0.25f;
 
     //----- Check lost object -----//
     if (!_pusher->canSeeObject()) {
@@ -143,14 +150,14 @@ void PusherScript::moveAroundObject() {
         moveVec *= -1;
 
     // Force to keep distance from object
-    // if (irS > maxDist)
-    //    moveVec += objVec;
-    // else if (irS < minDist)
-    //    moveVec -= objVec;
+    if (irS > maxDist)
+       moveVec += objVec;
+    else if (irS < minDist)
+       moveVec -= objVec;
 
     // Force to deviate from obstacles
-    // if (irF < minDist)
-    //    moveVec = atta::vec2(0.0f, clockwise ? -1.0f : 1.0f);
+    if (irF < minDist)
+       moveVec = atta::vec2(0.0f, _pusher->clockwise ? -1.0f : 1.0f);
 
     //----- Output - move -----//
     move(moveVec);

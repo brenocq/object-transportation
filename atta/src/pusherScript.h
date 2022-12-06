@@ -9,6 +9,7 @@
 #include "common.h"
 #include "pusherComponent.h"
 #include <atta/component/components/cameraSensor.h>
+#include <atta/component/components/infraredSensor.h>
 #include <atta/script/script.h>
 
 namespace cmp = atta::component;

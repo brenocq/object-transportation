@@ -12,7 +12,7 @@
 
 void PusherScript::update(cmp::Entity entity, float dt) {
     PROFILE();
-    //PROFILE_NAME("PusherScript::update("+std::to_string(entity.getId())+")");
+    // PROFILE_NAME("PusherScript::update("+std::to_string(entity.getId())+")");
     _entity = entity;
     _dt = dt;
 
@@ -25,7 +25,7 @@ void PusherScript::update(cmp::Entity entity, float dt) {
 
     // Get infrareds
     cmp::Entity infrareds = _entity.getChild(1);
-    for(int i = 0; i < 8; i++)
+    for (int i = 0; i < 8; i++)
         _ir[i] = infrareds.getChild(i).get<cmp::InfraredSensor>()->measurement;
 
     _pusher = _entity.get<PusherComponent>();
@@ -151,13 +151,13 @@ void PusherScript::moveAroundObject() {
 
     // Force to keep distance from object
     if (irS > maxDist)
-       moveVec += objVec;
+        moveVec += objVec;
     else if (irS < minDist)
-       moveVec -= objVec;
+        moveVec -= objVec;
 
     // Force to deviate from obstacles
     if (irF < minDist)
-       moveVec = atta::vec2(0.0f, _pusher->clockwise ? -1.0f : 1.0f);
+        moveVec = atta::vec2(0.0f, _pusher->clockwise ? -1.0f : 1.0f);
 
     //----- Output - move -----//
     move(moveVec);
@@ -167,6 +167,12 @@ void PusherScript::pushObject() {
     // Can see goal
     if (_pusher->canSeeGoal()) {
         changeState(PusherComponent::MOVE_AROUND_OBJECT);
+        return;
+    }
+
+    // Can't see object anymore
+    if (!_pusher->canSeeObject()) {
+        changeState(PusherComponent::RANDOM_WALK);
         return;
     }
 

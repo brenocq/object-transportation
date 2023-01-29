@@ -2,7 +2,6 @@
 // Box Pushing
 // pusherComponent.h
 // Date: 2022-11-06
-// By Breno Cunha Queiroz
 //--------------------------------------------------
 #ifndef PUSHER_COMPONENT_H
 #define PUSHER_COMPONENT_H

@@ -2,7 +2,6 @@
 // Box Pushing
 // pusherComponent.cpp
 // Date: 2022-11-06
-// By Breno Cunha Queiroz
 //--------------------------------------------------
 #include "pusherComponent.h"
 

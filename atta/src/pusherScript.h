@@ -2,7 +2,6 @@
 // Box Pushing
 // pusherScript.h
 // Date: 2022-10-31
-// By Breno Cunha Queiroz
 //--------------------------------------------------
 #ifndef PUSHER_SCRIPT_H
 #define PUSHER_SCRIPT_H

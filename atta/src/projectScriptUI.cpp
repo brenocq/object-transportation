@@ -2,14 +2,13 @@
 // Box Pushing
 // projectScriptUI.cpp
 // Date: 2022-11-27
-// By Breno Cunha Queiroz
 //--------------------------------------------------
 
 void ProjectScript::uiControl() {
     ImGui::Text("Control");
 
     //----- Select map -----//
-    static const char* options[] = { "Reference", "Middle", "Corner", "2 Corners" };
+    static const char* options[] = {"reference", "middle", "corner", "2-corners"};
     int selectedMap = 0;
     for (int i = 0; i < 4; i++)
         if (_currentMap == std::string(options[i])) {
@@ -18,7 +17,7 @@ void ProjectScript::uiControl() {
         }
 
     ImGui::SetNextItemWidth(100.0f);
-    if(ImGui::Combo("Map##ComboMap", &selectedMap, options, 4)) {
+    if (ImGui::Combo("Map##ComboMap", &selectedMap, options, 4)) {
         selectMap(options[selectedMap]);
     }
 
@@ -26,6 +25,43 @@ void ProjectScript::uiControl() {
     if (ImGui::Button("Randomize pushers"))
         randomizePushers();
 }
+
+void ProjectScript::uiExperiment() {
+    ImGui::Text("Experiments");
+
+    if (!_runExperiments) {
+        if (ImGui::Button("Start experiments")) {
+            if (atta::Config::getState() != atta::Config::State::IDLE) {
+                evt::SimulationStop e;
+                evt::publish(e);
+            }
+            _runExperiments = true;
+            _currentExperiment = 0;
+            _currentRepetition = 0;
+
+            _experimentResults["config"] = {};
+            _experimentResults["repetitions"] = {};
+        }
+    } else {
+        if (ImGui::Button("Stop experiments")) {
+            if (atta::Config::getState() != atta::Config::State::IDLE) {
+                evt::SimulationStop e;
+                evt::publish(e);
+            }
+            _runExperiments = false;
+            _currentExperiment = 0;
+            _currentRepetition = 0;
+        } else {
+            ImGui::Text("Experiment %d/%d", _currentExperiment + 1, experiments.size());
+            ImGui::Text("Repetition %d/%d", _currentRepetition + 1, experiments[_currentExperiment].numRepetitions);
+            ImGui::Text("Parameters:", _currentRepetition + 1, experiments[_currentExperiment].numRepetitions);
+            ImGui::Text(" - Num robots: %d", experiments[_currentExperiment].numRobots);
+            ImGui::Text(" - Map: %s", experiments[_currentExperiment].map.c_str());
+            ImGui::Text(" - Script: %s", experiments[_currentExperiment].script.c_str());
+        }
+    }
+}
+
 void ProjectScript::uiPusherInspector() {
     ImGui::Text("Inspector");
     if (atta::Config::getState() != atta::Config::State::IDLE) {

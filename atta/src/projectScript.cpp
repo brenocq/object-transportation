@@ -2,7 +2,6 @@
 // Box Pushing
 // projectScript.cpp
 // Date: 2022-10-31
-// By Breno Cunha Queiroz
 //--------------------------------------------------
 #include "projectScript.h"
 #include "common.h"
@@ -13,9 +12,14 @@
 #include <atta/component/components/material.h>
 #include <atta/component/components/mesh.h>
 #include <atta/component/components/name.h>
+#include <atta/component/components/prototype.h>
 #include <atta/component/components/relationship.h>
 #include <atta/component/components/rigidBody2D.h>
+#include <atta/component/components/script.h>
 #include <atta/component/components/transform.h>
+#include <atta/event/events/simulationStart.h>
+#include <atta/event/events/simulationStop.h>
+#include <atta/event/interface.h>
 #include <atta/graphics/drawer.h>
 #include <atta/sensor/interface.h>
 #include <atta/utils/config.h>
@@ -23,7 +27,9 @@
 namespace gfx = atta::graphics;
 namespace cmp = atta::component;
 namespace sns = atta::sensor;
+namespace evt = atta::event;
 
+//---------- Maps ----------//
 struct WallInfo {
     atta::vec2 pos;
     atta::vec2 size;
@@ -37,7 +43,7 @@ struct MapInfo {
 
 std::map<std::string, MapInfo> maps = {
     {
-        "Reference",
+        "reference",
         {
             .goalPos = {1.0f, 1.0f},
             .objectPos = {-1.0f, -1.0f},
@@ -45,7 +51,7 @@ std::map<std::string, MapInfo> maps = {
         },
     },
     {
-        "Middle",
+        "middle",
         {
             .goalPos = {0.0f, 1.0f},
             .objectPos = {0.0f, -1.0f},
@@ -53,7 +59,7 @@ std::map<std::string, MapInfo> maps = {
         },
     },
     {
-        "Corner",
+        "corner",
         {
             .goalPos = {-1.0f, 1.0f},
             .objectPos = {-1.0f, -1.0f},
@@ -61,7 +67,7 @@ std::map<std::string, MapInfo> maps = {
         },
     },
     {
-        "2 Corners",
+        "2-corners",
         {
             .goalPos = {1.0f, 1.0f},
             .objectPos = {-1.0f, -1.0f},
@@ -74,14 +80,36 @@ std::map<std::string, MapInfo> maps = {
     },
 };
 
-void ProjectScript::onLoad() { selectMap("Reference"); }
+//---------- Experiments ----------//
+struct Experiment {
+    int numRepetitions = 1;
+    int numRobots = 20;
+    float timeout = 60.0f;
+    std::string map = "reference";
+    std::string script = "PusherScript";
+};
+
+const float gTimeout = 10.0f;
+std::vector<Experiment> experiments = {
+    {.numRepetitions = 3, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    {.numRepetitions = 3, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    {.numRepetitions = 3, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    {.numRepetitions = 3, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+};
+
+//---------- Project Script ----------//
+void ProjectScript::onLoad() {
+    _currentExperiment = 0;
+    _runExperiments = false;
+    selectMap("reference");
+}
 
 void ProjectScript::onUnload() { resetMap(); }
 
 void ProjectScript::onStart() {
     randomizePushers();
 
-    // Make sure all camera images are captured at the same time
+    // Make sure all cameras from the same pusher are synchronized
     for (cmp::Entity pusher : cmp::getFactory(pusherProto)->getClones()) {
         cmp::Entity cams = pusher.getChild(0);
         auto cam0 = cams.getChild(0).get<cmp::CameraSensor>();
@@ -110,6 +138,9 @@ void ProjectScript::onUIRender() {
     ImGui::Begin("Project");
     {
         uiControl();
+        ImGui::Separator();
+        uiExperiment();
+        runExperiments();
         ImGui::Separator();
         uiPusherInspector();
     }
@@ -230,4 +261,5 @@ void ProjectScript::randomizePushers() {
     }
 }
 
+#include "projectScriptExperiments.cpp"
 #include "projectScriptUI.cpp"

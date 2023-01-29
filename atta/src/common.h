@@ -2,7 +2,6 @@
 // Box Pushing
 // common.h
 // Date: 2022-10-31
-// By Breno Cunha Queiroz
 //--------------------------------------------------
 #ifndef COMMON_H
 #define COMMON_H

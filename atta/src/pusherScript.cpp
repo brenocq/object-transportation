@@ -23,11 +23,6 @@ void PusherScript::update(cmp::Entity entity, float dt) {
     _cams[2] = cameras.getChild(2).get<cmp::CameraSensor>();
     _cams[3] = cameras.getChild(3).get<cmp::CameraSensor>();
 
-    // Get infrareds
-    cmp::Entity infrareds = _entity.getChild(1);
-    for (int i = 0; i < 8; i++)
-        _ir[i] = infrareds.getChild(i).get<cmp::InfraredSensor>()->measurement;
-
     _pusher = _entity.get<PusherComponent>();
     _pusher->timer += dt;
 
@@ -143,13 +138,6 @@ void PusherScript::moveAroundObject() {
         idxF = (idxF == 4) ? 0 : 4;
     }
 
-    //float irF = _ir[idxF]; // IR front
-    //float irS = 0.0f;
-    //if (_pusher->clockwise)
-    //    irS = _ir[idxF + 2]; // IR right
-    //else
-    //    irS = _ir[(idxF - 2 + _ir.size()) % _ir.size()]; // IR left
-
     //----- Force field -----//
     atta::vec2 objVec = dirToVec(_pusher->objectDirection);
 
@@ -161,18 +149,6 @@ void PusherScript::moveAroundObject() {
     // Force to keep distance from object
     if (_pusher->objectDistance > 0.2)
         moveVec += objVec;
-
-    // Force to keep distance from object
-    // if (irS > maxDist || _pusher->objectDistance > 0.2) // If too far
-    //    moveVec += objVec;
-    // else if (irS < minDist) // If too close
-    //    moveVec -= objVec;
-    // else {
-    //}
-
-    // Force to deviate from obstacles
-    // if (irF < minDist)
-    //    moveVec = atta::vec2(0.0f, _pusher->clockwise ? -1.0f : 1.0f);
 
     //----- Output - move -----//
     move(moveVec);

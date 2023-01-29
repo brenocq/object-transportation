@@ -23,6 +23,7 @@ cmp::ComponentDescription& cmp::TypedComponentRegistry<PusherComponent>::getDesc
             {AttributeType::FLOAT32, offsetof(PusherComponent, lastFrameTime), "lastFrameTime"},
             {AttributeType::FLOAT32, offsetof(PusherComponent, randomWalkAux), "randomWalkAux"},
             {AttributeType::BOOL, offsetof(PusherComponent, clockwise), "clockwise"},
+            {AttributeType::BOOL, offsetof(PusherComponent, couldSeeGoal), "couldSeeGoal"},
             {AttributeType::FLOAT32, offsetof(PusherComponent, objectDirection), "objectDirection"},
             {AttributeType::FLOAT32, offsetof(PusherComponent, objectDistance), "objectDistance"},
             {AttributeType::FLOAT32, offsetof(PusherComponent, goalDirection), "goalDirection"},

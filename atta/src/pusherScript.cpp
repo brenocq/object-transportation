@@ -59,20 +59,23 @@ void PusherScript::update(cmp::Entity entity, float dt) {
 
 //---------- States ----------//
 void PusherScript::randomWalk() {
-    const float a = 1.0f;
+    const float a = 2.0f;
     const float b = 0.2f;
     _pusher->randomWalkAux += _dt * (rand() / float(RAND_MAX) * a * 2 - a); // Add Unif(-a, a)
+    // Clip randomWalkAux angle
     if (_pusher->randomWalkAux < -b)
         _pusher->randomWalkAux = -b;
     if (_pusher->randomWalkAux > b)
         _pusher->randomWalkAux = b;
     move(dirToVec(_pusher->randomWalkAux));
 
-    if (!_pusher->canSeeGoal() && _cams[0]->captureTime > 0) {
+    // If the goal is no longer visible
+    if (!_pusher->canSeeGoal() && _pusher->couldSeeGoal) {
         changeState(PusherComponent::BE_A_GOAL);
         return;
     }
 
+    // If can see both the goal and the object
     if (_pusher->canSeeObject() && _pusher->canSeeGoal()) {
         changeState(PusherComponent::APPROACH_OBJECT);
         return;
@@ -83,7 +86,7 @@ void PusherScript::approachObject() {
     const float minDist = 0.15f;  // Minimum distance to the object to change state
     const float minAngle = 0.15f; // The front angle interval is [-minAngle, minAngle]
 
-    if (_pusher->canSeeObject()) {
+    if (_pusher->canSeeObject() && _pusher->canSeeGoal()) {
         float dir = _pusher->objectDirection;
 
         // Move to object
@@ -103,6 +106,12 @@ void PusherScript::approachObject() {
 }
 
 void PusherScript::moveAroundObject() {
+    //----- Initialize state -----//
+    if (_pusher->timer == _dt) {
+        // Choose to move around cw/ccw
+        _pusher->clockwise = _pusher->goalDirection > 0;
+    }
+
     //----- Parameters -----//
     atta::vec2 moveVec(1.0f, 0.0f); // Robot move vector (X is to the forward, Y is left)
     const float minDist = 0.1f;
@@ -134,30 +143,36 @@ void PusherScript::moveAroundObject() {
         idxF = (idxF == 4) ? 0 : 4;
     }
 
-    float irF = _ir[idxF]; // IR front
-    float irS = 0.0f;
-    if (_pusher->clockwise)
-        irS = _ir[idxF + 2]; // IR right
-    else
-        irS = _ir[(idxF - 2 + _ir.size()) % _ir.size()]; // IR left
+    //float irF = _ir[idxF]; // IR front
+    //float irS = 0.0f;
+    //if (_pusher->clockwise)
+    //    irS = _ir[idxF + 2]; // IR right
+    //else
+    //    irS = _ir[(idxF - 2 + _ir.size()) % _ir.size()]; // IR left
 
     //----- Force field -----//
     atta::vec2 objVec = dirToVec(_pusher->objectDirection);
 
     // Force to move around the object
     moveVec = atta::vec2(-objVec.y, objVec.x);
-    if (!_pusher->clockwise)
+    if (_pusher->clockwise)
         moveVec *= -1;
 
     // Force to keep distance from object
-    if (irS > maxDist)
+    if (_pusher->objectDistance > 0.2)
         moveVec += objVec;
-    else if (irS < minDist)
-        moveVec -= objVec;
+
+    // Force to keep distance from object
+    // if (irS > maxDist || _pusher->objectDistance > 0.2) // If too far
+    //    moveVec += objVec;
+    // else if (irS < minDist) // If too close
+    //    moveVec -= objVec;
+    // else {
+    //}
 
     // Force to deviate from obstacles
-    if (irF < minDist)
-        moveVec = atta::vec2(0.0f, _pusher->clockwise ? -1.0f : 1.0f);
+    // if (irF < minDist)
+    //    moveVec = atta::vec2(0.0f, _pusher->clockwise ? -1.0f : 1.0f);
 
     //----- Output - move -----//
     move(moveVec);
@@ -320,7 +335,10 @@ void PusherScript::processCameras() {
     // If it is not a new image, do not process
     if (_cams[0]->captureTime == _pusher->lastFrameTime)
         return;
+
+    // Store data about last frame
     _pusher->lastFrameTime = _cams[0]->captureTime;
+    _pusher->couldSeeGoal = _pusher->canSeeGoal();
 
     // Initialize values as default
     _pusher->objectDirection = NAN;

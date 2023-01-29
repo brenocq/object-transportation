@@ -26,9 +26,11 @@ struct PusherComponent final : public cmp::Component {
     float timer = 0.0f;// Timer to change state
     float timer1 = 0.0f;// State specific timer
     float lastFrameTime = 0.0f;
+
     // Auxiliar parameters
     float randomWalkAux = 0.0f;// Auxiliar parameter to perform random walk
     bool clockwise = true;// If should walk around object clockwise
+    bool couldSeeGoal = false;// If could see goal in the last frame
 
     bool canSeeObject() { return !std::isnan(objectDistance); }
     bool canSeeGoal() { return !std::isnan(goalDistance); }

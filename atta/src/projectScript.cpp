@@ -89,12 +89,17 @@ struct Experiment {
     std::string script = "PusherScript";
 };
 
-const float gTimeout = 10.0f;
+const float gTimeout = 30.0f;// Global timeout in seconds
 std::vector<Experiment> experiments = {
-    {.numRepetitions = 3, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-    {.numRepetitions = 3, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-    {.numRepetitions = 3, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-    {.numRepetitions = 3, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherPaperScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherPaperScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherPaperScript"},
+
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
 };
 
 //---------- Project Script ----------//

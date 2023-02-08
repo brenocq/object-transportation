@@ -1,15 +1,14 @@
 //--------------------------------------------------
 // Box Pushing
-// pusherScript.h
+// pusherPaperScript.h
 // Date: 2022-10-31
 //--------------------------------------------------
-#include "pusherScript.h"
+#include "pusherPaperScript.h"
 #include "pusherCommon.h"
 #include <atta/component/components/material.h>
-#include <atta/component/components/rigidBody2D.h>
 #include <atta/component/components/transform.h>
 
-void PusherScript::update(cmp::Entity entity, float dt) {
+void PusherPaperScript::update(cmp::Entity entity, float dt) {
     PROFILE();
     _entity = entity;
     _dt = dt;
@@ -42,31 +41,21 @@ void PusherScript::update(cmp::Entity entity, float dt) {
         case PusherComponent::PUSH_OBJECT:
             pushObject();
             break;
-        case PusherComponent::BE_A_GOAL:
-            beAGoal();
-            break;
     }
-
-    _entity.get<cmp::Material>()->set(_pusher->state == PusherComponent::BE_A_GOAL ? "goal" : "pusher");
 }
 
 //---------- States ----------//
-void PusherScript::randomWalk() {
+void PusherPaperScript::randomWalk() {
     const float a = 2.0f;
     const float b = 0.2f;
     _pusher->randomWalkAux += _dt * (rand() / float(RAND_MAX) * a * 2 - a); // Add Unif(-a, a)
+
     // Clip randomWalkAux angle
     if (_pusher->randomWalkAux < -b)
         _pusher->randomWalkAux = -b;
     if (_pusher->randomWalkAux > b)
         _pusher->randomWalkAux = b;
     PusherCommon::move(_entity, PusherCommon::dirToVec(_pusher->randomWalkAux));
-
-    // If the goal is no longer visible
-    if (!_pusher->canSeeGoal() && _pusher->couldSeeGoal) {
-        PusherCommon::changeState(_pusher, PusherComponent::BE_A_GOAL);
-        return;
-    }
 
     // If can see both the goal and the object
     if (_pusher->canSeeObject() && _pusher->canSeeGoal()) {
@@ -75,9 +64,9 @@ void PusherScript::randomWalk() {
     }
 }
 
-void PusherScript::approachObject() { PusherCommon::approachObject(_entity, _pusher); }
+void PusherPaperScript::approachObject() { PusherCommon::approachObject(_entity, _pusher); }
 
-void PusherScript::moveAroundObject() {
+void PusherPaperScript::moveAroundObject() {
     //----- Initialize state -----//
     if (_pusher->timer == _dt) {
         // Choose to move around cw/ccw
@@ -131,9 +120,4 @@ void PusherScript::moveAroundObject() {
     PusherCommon::move(_entity, moveVec);
 }
 
-void PusherScript::pushObject() { PusherCommon::pushObject(_entity, _pusher); }
-
-void PusherScript::beAGoal() {
-    if (_pusher->canSeeGoal() || _pusher->timer >= PusherComponent::beAGoalTimeout || _pusher->objectDistance == 0.0f)
-        PusherCommon::changeState(_pusher, PusherComponent::RANDOM_WALK);
-}
+void PusherPaperScript::pushObject() { PusherCommon::pushObject(_entity, _pusher); }

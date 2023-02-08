@@ -1,10 +1,10 @@
 //--------------------------------------------------
 // Box Pushing
-// pusherScript.h
+// pusherPaperScript.h
 // Date: 2022-10-31
 //--------------------------------------------------
-#ifndef PUSHER_SCRIPT_H
-#define PUSHER_SCRIPT_H
+#ifndef PUSHER_PAPER_SCRIPT_H
+#define PUSHER_PAPER_SCRIPT_H
 #include "pusherComponent.h"
 #include <atta/component/components/cameraSensor.h>
 #include <atta/component/components/infraredSensor.h>
@@ -13,7 +13,7 @@
 namespace cmp = atta::component;
 namespace scr = atta::script;
 
-class PusherScript : public scr::Script {
+class PusherPaperScript : public scr::Script {
   public:
     void update(cmp::Entity entity, float dt) override;
 
@@ -23,7 +23,6 @@ class PusherScript : public scr::Script {
     void approachObject();
     void moveAroundObject();
     void pushObject();
-    void beAGoal();
 
     cmp::Entity _entity;
     float _dt;
@@ -32,6 +31,6 @@ class PusherScript : public scr::Script {
     std::array<cmp::CameraSensor*, 4> _cams;
 };
 
-ATTA_REGISTER_SCRIPT(PusherScript)
+ATTA_REGISTER_SCRIPT(PusherPaperScript)
 
-#endif // PUSHER_SCRIPT_H
+#endif // PUSHER_PAPER_SCRIPT_H

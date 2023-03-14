@@ -22,24 +22,26 @@ struct PusherComponent final : public cmp::Component {
     static constexpr float pushObjectTimeout = 2 * 60.0f;
 
     State state = State::RANDOM_WALK;
-    float timer = 0.0f;// Timer to change state
-    float timer1 = 0.0f;// State specific timer
+    float timer = 0.0f;  // Timer to change state
+    float timer1 = 0.0f; // State specific timer
     float lastFrameTime = 0.0f;
 
     // Auxiliar parameters
-    float randomWalkAux = 0.0f;// Auxiliar parameter to perform random walk
-    bool clockwise = true;// If should walk around object clockwise
-    bool couldSeeGoal = false;// If could see goal in the last frame
+    float randomWalkAux = 0.0f;  // Auxiliar parameter to perform random walk
+    bool clockwise = true;       // If should walk around object clockwise
+    bool couldSeeGoal = false;   // If could see goal in the last frame
+    bool angleGreater90 = true; // Check if angle was greater than 90 when goal and object were visible
 
     bool canSeeObject() { return !std::isnan(objectDistance); }
     bool canSeeGoal() { return !std::isnan(goalDistance); }
+    bool freeSpaceToPush() { return !std::isnan(pushDirection); }
 
     // Cache image processing result
     float objectDirection = NAN; // Direction [-pi, pi]
     float objectDistance = NAN;  // Distance in pixels from top to bottom
     float goalDirection = NAN;   // Direction [-pi, pi]
     float goalDistance = NAN;    // Distance in pixels from top to bottom
-
+    float pushDirection = NAN;   // Direction [-pi, pi]
 };
 ATTA_REGISTER_COMPONENT(PusherComponent);
 template <>

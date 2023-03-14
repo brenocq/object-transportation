@@ -18,7 +18,9 @@ atta::vec2 dirToVec(float dir);
 float distInDirection(const std::array<float, 8>& irs, float dir);
 
 // States
-void approachObject(cmp::Entity entity, PusherComponent* pusher, const std::array<float, 8>& irs);
+void randomWalk(cmp::Entity entity, PusherComponent* pusher, float dt, bool isPaperScript);
+void approachObject(cmp::Entity entity, PusherComponent* pusher, const std::array<float, 8>& irs, bool isPaperScript);
+void moveAroundObject(cmp::Entity entity, PusherComponent* pusher, const std::array<float, 8>& irs, float dt, bool isPaperScript);
 void pushObject(cmp::Entity entity, PusherComponent* pusher);
 
 // Processing

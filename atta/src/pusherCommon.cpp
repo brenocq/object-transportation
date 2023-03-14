@@ -53,6 +53,148 @@ float PusherCommon::distInDirection(const std::array<float, 8>& irs, float dir) 
     return irs[idx];
 }
 
+float angleDistance(float a0, float a1) {
+    float dist = a1 > a0 ? (a1 - a0) : (a0 - a1);
+    return dist > M_PI ? 2 * M_PI - dist : dist;
+}
+
+void PusherCommon::randomWalk(cmp::Entity entity, PusherComponent* pusher, float dt, bool isPaperScript) {
+    const float a = 2.0f;
+    const float b = 0.2f;
+    pusher->randomWalkAux += dt * (rand() / float(RAND_MAX) * a * 2 - a); // Add Unif(-a, a)
+
+    // Clip randomWalkAux angle
+    if (pusher->randomWalkAux < -b)
+        pusher->randomWalkAux = -b;
+    if (pusher->randomWalkAux > b)
+        pusher->randomWalkAux = b;
+    PusherCommon::move(entity, PusherCommon::dirToVec(pusher->randomWalkAux));
+
+    if (!isPaperScript) {
+        // If the goal is no longer visible
+        bool noLongerVisible = !pusher->canSeeGoal() && pusher->couldSeeGoal;
+        if (noLongerVisible && pusher->angleGreater90) {
+            PusherCommon::changeState(pusher, PusherComponent::BE_A_GOAL);
+            return;
+        }
+    }
+
+    // Check if it can see
+    bool canSee = pusher->canSeeObject() && (!isPaperScript ? pusher->canSeeGoal() : true);
+    if (canSee)
+        PusherCommon::changeState(pusher, PusherComponent::APPROACH_OBJECT);
+}
+
+void PusherCommon::approachObject(cmp::Entity entity, PusherComponent* pusher, const std::array<float, 8>& irs, bool isPaperScript) {
+    const float minCamDist = 0.15f; // Minimum distance to the object to change state (using Camera)
+    const float minIrDist = 0.1f;   // Minimum distance to the object to change state (using IR)
+    const float minAngle = 0.15f;   // The front angle interval is [-minAngle, minAngle]
+
+    // Check if it can still see
+    bool canSee = pusher->canSeeObject() && (!isPaperScript ? pusher->canSeeGoal() : true);
+    if (!canSee) {
+        PusherCommon::changeState(pusher, PusherComponent::RANDOM_WALK);
+        return;
+    }
+
+    float dir = pusher->objectDirection;
+
+    // Move to object
+    PusherCommon::move(entity, PusherCommon::dirToVec(dir));
+
+    // Check if arrived
+    bool isClose = pusher->objectDistance < minCamDist &&                                   // If distance from camera is small
+                   PusherCommon::distInDirection(irs, pusher->objectDirection) < minIrDist; // And distance from IR is small
+    bool isInFront = (dir < minAngle && dir > -minAngle) || (dir < (-M_PI + minAngle) || dir > (M_PI - minAngle));
+    if (isClose && isInFront) {
+        if (!pusher->canSeeGoal() && pusher->freeSpaceToPush())
+            PusherCommon::changeState(pusher, PusherComponent::PUSH_OBJECT);
+        else
+            PusherCommon::changeState(pusher, PusherComponent::MOVE_AROUND_OBJECT);
+        return;
+    }
+}
+
+void PusherCommon::moveAroundObject(cmp::Entity entity, PusherComponent* pusher, const std::array<float, 8>& irs, float dt, bool isPaperScript) {
+    //----- Check lost object -----//
+    if (!pusher->canSeeObject()) {
+        PusherCommon::changeState(pusher, PusherComponent::RANDOM_WALK);
+        return;
+    }
+
+    //----- Check should push -----//
+    if (!pusher->canSeeGoal() && pusher->freeSpaceToPush()) {
+        PusherCommon::changeState(pusher, PusherComponent::PUSH_OBJECT);
+        return;
+    }
+
+    //----- Timeout -----//
+    // If timer reached zero
+    if (pusher->timer >= PusherComponent::moveAroundObjectTimeout) {
+        PusherCommon::changeState(pusher, PusherComponent::RANDOM_WALK);
+        return;
+    }
+
+    //----- Select clockwise/anti-clockwise -----//
+    if (!isPaperScript && pusher->canSeeGoal()) {
+        float diff = pusher->objectDirection - pusher->goalDirection;
+        if (diff >= 2 * M_PI)
+            diff -= 2 * M_PI;
+        if (diff < 0)
+            diff += 2 * M_PI;
+        pusher->clockwise = diff >= M_PI;
+    }
+
+    //----- Parameters -----//
+    atta::vec2 moveVec(1.0f, 0.0f); // Robot move vector (X is to the forward, Y is left)
+    const float minDist = 0.1f;
+    const float maxDist = 0.25f;
+
+    unsigned idxF = pusher->clockwise ? 0 : 4; // Index at the front of the robot
+    if (pusher->objectDirection < 0) {
+        // If robot moving "backward", front sensor is behind
+        idxF = (idxF == 4) ? 0 : 4;
+    }
+
+    //----- Force field -----//
+    atta::vec2 objVec = PusherCommon::dirToVec(pusher->objectDirection);
+
+    // Force to move around the object
+    moveVec = atta::vec2(-objVec.y, objVec.x);
+    if (pusher->clockwise)
+        moveVec *= -1;
+
+    // Force to keep distance from object
+    if (pusher->objectDistance > 0.2 || PusherCommon::distInDirection(irs, pusher->objectDirection) > 0.2)
+        moveVec += objVec;
+
+    //----- Output - move -----//
+    PusherCommon::move(entity, moveVec);
+}
+
+void PusherCommon::pushObject(cmp::Entity entity, PusherComponent* pusher) {
+    // Can't see object anymore
+    if (!pusher->canSeeObject()) {
+        PusherCommon::changeState(pusher, PusherComponent::RANDOM_WALK);
+        return;
+    }
+
+    // Can see goal or no free space to push
+    if (pusher->canSeeGoal() || !pusher->freeSpaceToPush()) {
+        PusherCommon::changeState(pusher, PusherComponent::MOVE_AROUND_OBJECT);
+        return;
+    }
+
+    // Timeout
+    if (pusher->timer >= PusherComponent::pushObjectTimeout) {
+        PusherCommon::changeState(pusher, PusherComponent::RANDOM_WALK);
+        return;
+    }
+
+    // Push
+    PusherCommon::move(entity, PusherCommon::dirToVec(pusher->objectDirection));
+}
+
 float calcDirection(std::array<cmp::CameraSensor*, 4> cams, unsigned y, Color color) {
     // Create row of colors
     std::array<const uint8_t*, 4> images = {cams[0]->getImage(), cams[1]->getImage(), cams[2]->getImage(), cams[3]->getImage()};
@@ -132,53 +274,6 @@ float calcDirection(std::array<cmp::CameraSensor*, 4> cams, unsigned y, Color co
     return meanPos * M_PI * 0.5;
 }
 
-void PusherCommon::approachObject(cmp::Entity entity, PusherComponent* pusher, const std::array<float, 8>& irs) {
-    const float minCamDist = 0.15f; // Minimum distance to the object to change state (using Camera)
-    const float minIrDist = 0.1f;   // Minimum distance to the object to change state (using IR)
-    const float minAngle = 0.15f;   // The front angle interval is [-minAngle, minAngle]
-
-    if (pusher->canSeeObject() && pusher->canSeeGoal()) {
-        float dir = pusher->objectDirection;
-
-        // Move to object
-        PusherCommon::move(entity, PusherCommon::dirToVec(dir));
-
-        // Check if arrived
-        bool isInFront = (dir < minAngle && dir > -minAngle) || (dir < (-M_PI + minAngle) || dir > (M_PI - minAngle));
-        if (pusher->objectDistance < minCamDist && PusherCommon::distInDirection(irs, pusher->objectDirection) < minIrDist && isInFront) {
-            if (pusher->canSeeGoal())
-                PusherCommon::changeState(pusher, PusherComponent::MOVE_AROUND_OBJECT);
-            else
-                PusherCommon::changeState(pusher, PusherComponent::PUSH_OBJECT);
-            return;
-        }
-    } else
-        PusherCommon::changeState(pusher, PusherComponent::RANDOM_WALK);
-}
-
-void PusherCommon::pushObject(cmp::Entity entity, PusherComponent* pusher) {
-    // Can see goal
-    if (pusher->canSeeGoal()) {
-        PusherCommon::changeState(pusher, PusherComponent::MOVE_AROUND_OBJECT);
-        return;
-    }
-
-    // Can't see object anymore
-    if (!pusher->canSeeObject()) {
-        PusherCommon::changeState(pusher, PusherComponent::RANDOM_WALK);
-        return;
-    }
-
-    // Timeout
-    if (pusher->timer >= PusherComponent::pushObjectTimeout) {
-        PusherCommon::changeState(pusher, PusherComponent::RANDOM_WALK);
-        return;
-    }
-
-    // Push
-    PusherCommon::move(entity, PusherCommon::dirToVec(pusher->objectDirection));
-}
-
 void PusherCommon::processCameras(PusherComponent* pusher, std::array<cmp::CameraSensor*, 4> cams) {
     PROFILE();
 
@@ -195,8 +290,9 @@ void PusherCommon::processCameras(PusherComponent* pusher, std::array<cmp::Camer
     pusher->objectDistance = NAN;
     pusher->goalDirection = NAN;
     pusher->goalDistance = NAN;
+    pusher->pushDirection = NAN;
 
-    // If there is no image available yet, do not continue
+    // If there is no image available yet, don't process
     if (cams[0]->captureTime < 0.0f)
         return;
 
@@ -204,7 +300,7 @@ void PusherCommon::processCameras(PusherComponent* pusher, std::array<cmp::Camer
     std::array<const uint8_t*, 4> images = {cams[0]->getImage(), cams[1]->getImage(), cams[2]->getImage(), cams[3]->getImage()};
     const unsigned w = cams[0]->width;
     const unsigned h = cams[0]->height;
-    for (int y = h * 0.8; y >= 0; y--) // Scan from bottom to top (ignore lower pixels where robot is visible)
+    for (int y = h * 0.85; y >= 0; y--) // Scan from bottom to top (ignore lower pixels where robot is visible)
         for (unsigned x = 0; x < w * 4; x++) {
             // Get pixel values
             const uint8_t* img = images[x / w];
@@ -217,11 +313,25 @@ void PusherCommon::processCameras(PusherComponent* pusher, std::array<cmp::Camer
             if (color == goalColor)
                 pusher->goalDistance = y / float(h);
 
-            // Update directions
+            // Update goal/object directions
             if (color == objectColor && std::isnan(pusher->objectDirection))
                 pusher->objectDirection = calcDirection(cams, y, objectColor);
             if (color == goalColor && std::isnan(pusher->goalDirection))
                 pusher->goalDirection = calcDirection(cams, y, goalColor);
+
+            // Update push direction
+            if (std::isnan(pusher->pushDirection)) {
+                // Get pixel below
+                unsigned idxB = ((y + 1) * w + (x % w)) * 3;
+                Color colorBelow = {img[idxB + 0], img[idxB + 1], img[idxB + 2]};
+                // Check if pixel is object is pixel below is not pusher
+                if (color == objectColor && colorBelow != pusherColor && colorBelow != objectColor)
+                    pusher->pushDirection = calcDirection(cams, y, objectColor);
+            }
         }
+
+    // Update angle between goal and object greater than 90
+    if (pusher->canSeeGoal() && pusher->canSeeObject())
+        pusher->angleGreater90 = angleDistance(pusher->goalDirection, pusher->objectDirection) > M_PI / 2.0f;
 }
 

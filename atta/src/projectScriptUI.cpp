@@ -132,6 +132,14 @@ void ProjectScript::drawerPusherLines() {
                 line.c0 = line.c1 = {objectColor.r / 255.0f, objectColor.g / 255.0f, objectColor.b / 255.0f, 1};
                 gfx::Drawer::add(line, "directions");
             }
+
+            // Draw push line
+            if (!std::isnan(p->pushDirection)) {
+                ang = t->orientation.get2DAngle() - p->pushDirection;
+                line.p1 = line.p0 + length * atta::vec3(std::cos(ang), std::sin(ang), 0);
+                line.c0 = line.c1 = {pusherColor.r / 255.0f, pusherColor.g / 255.0f, pusherColor.b / 255.0f, 1};
+                gfx::Drawer::add(line, "directions");
+            }
         }
     }
 }

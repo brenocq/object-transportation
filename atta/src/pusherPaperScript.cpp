@@ -50,79 +50,10 @@ void PusherPaperScript::update(cmp::Entity entity, float dt) {
 }
 
 //---------- States ----------//
-void PusherPaperScript::randomWalk() {
-    const float a = 2.0f;
-    const float b = 0.2f;
-    _pusher->randomWalkAux += _dt * (rand() / float(RAND_MAX) * a * 2 - a); // Add Unif(-a, a)
+void PusherPaperScript::randomWalk() { PusherCommon::randomWalk(_entity, _pusher, _dt, true); }
 
-    // Clip randomWalkAux angle
-    if (_pusher->randomWalkAux < -b)
-        _pusher->randomWalkAux = -b;
-    if (_pusher->randomWalkAux > b)
-        _pusher->randomWalkAux = b;
-    PusherCommon::move(_entity, PusherCommon::dirToVec(_pusher->randomWalkAux));
+void PusherPaperScript::approachObject() { PusherCommon::approachObject(_entity, _pusher, _irs, true); }
 
-    // If can see both the goal and the object
-    if (_pusher->canSeeObject() && _pusher->canSeeGoal()) {
-        PusherCommon::changeState(_pusher, PusherComponent::APPROACH_OBJECT);
-        return;
-    }
-}
-
-void PusherPaperScript::approachObject() { PusherCommon::approachObject(_entity, _pusher, _irs); }
-
-void PusherPaperScript::moveAroundObject() {
-    //----- Check lost object -----//
-    if (!_pusher->canSeeObject()) {
-        PusherCommon::changeState(_pusher, PusherComponent::RANDOM_WALK);
-        return;
-    }
-
-    //----- Check should push -----//
-    if (!_pusher->canSeeGoal()) {
-        PusherCommon::changeState(_pusher, PusherComponent::PUSH_OBJECT);
-        return;
-    }
-
-    //----- Initialize state -----//
-    if (_pusher->timer == _dt) {
-        // Choose to move around cw/ccw
-        _pusher->clockwise = _pusher->goalDirection > 0;
-    }
-
-    //----- Parameters -----//
-    atta::vec2 moveVec(1.0f, 0.0f); // Robot move vector (X is to the forward, Y is left)
-    const float minDist = 0.1f;
-    const float maxDist = 0.25f;
-
-    //----- Timeout -----//
-    // If timer reached zero
-    if (_pusher->timer >= PusherComponent::moveAroundObjectTimeout) {
-        PusherCommon::changeState(_pusher, PusherComponent::RANDOM_WALK);
-        return;
-    }
-
-    //----- Input -----//
-    unsigned idxF = _pusher->clockwise ? 0 : 4;
-    if (_pusher->objectDirection < 0) {
-        // If robot moving "backward", front sensor is behind
-        idxF = (idxF == 4) ? 0 : 4;
-    }
-
-    //----- Force field -----//
-    atta::vec2 objVec = PusherCommon::dirToVec(_pusher->objectDirection);
-
-    // Force to move around the object
-    moveVec = atta::vec2(-objVec.y, objVec.x);
-    if (_pusher->clockwise)
-        moveVec *= -1;
-
-    // Force to keep distance from object
-    if (_pusher->objectDistance > 0.2 || PusherCommon::distInDirection(_irs, _pusher->objectDirection) > 0.2)
-        moveVec += objVec;
-
-    //----- Output - move -----//
-    PusherCommon::move(_entity, moveVec);
-}
+void PusherPaperScript::moveAroundObject() { PusherCommon::moveAroundObject(_entity, _pusher, _irs, _dt, true); }
 
 void PusherPaperScript::pushObject() { PusherCommon::pushObject(_entity, _pusher); }

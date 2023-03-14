@@ -25,5 +25,6 @@ struct Color {
 };
 inline const Color goalColor(0, 255, 0);
 inline const Color objectColor(255, 0, 0);
+inline const Color pusherColor(0, 0, 255);
 
 #endif // COMMON_H

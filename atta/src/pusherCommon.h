@@ -15,9 +15,10 @@ namespace PusherCommon {
 void changeState(PusherComponent* pusher, PusherComponent::State state);
 void move(cmp::Entity entity, atta::vec2 direction);
 atta::vec2 dirToVec(float dir);
+float distInDirection(const std::array<float, 8>& irs, float dir);
 
 // States
-void approachObject(cmp::Entity entity, PusherComponent* pusher);
+void approachObject(cmp::Entity entity, PusherComponent* pusher, const std::array<float, 8>& irs);
 void pushObject(cmp::Entity entity, PusherComponent* pusher);
 
 // Processing

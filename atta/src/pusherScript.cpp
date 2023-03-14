@@ -21,6 +21,11 @@ void PusherScript::update(cmp::Entity entity, float dt) {
     _cams[2] = cameras.getChild(2).get<cmp::CameraSensor>();
     _cams[3] = cameras.getChild(3).get<cmp::CameraSensor>();
 
+    // Get infrareds
+    cmp::Entity infrareds = _entity.getChild(1);
+    for (int i = 0; i < 8; i++)
+        _irs[i] = infrareds.getChild(i).get<cmp::InfraredSensor>()->measurement;
+
     _pusher = _entity.get<PusherComponent>();
     _pusher->timer += dt;
 
@@ -75,7 +80,7 @@ void PusherScript::randomWalk() {
     }
 }
 
-void PusherScript::approachObject() { PusherCommon::approachObject(_entity, _pusher); }
+void PusherScript::approachObject() { PusherCommon::approachObject(_entity, _pusher, _irs); }
 
 void PusherScript::moveAroundObject() {
     //----- Check lost object -----//
@@ -124,7 +129,7 @@ void PusherScript::moveAroundObject() {
         moveVec *= -1;
 
     // Force to keep distance from object
-    if (_pusher->objectDistance > 0.2)
+    if (_pusher->objectDistance > 0.2 || PusherCommon::distInDirection(_irs, _pusher->objectDirection) > 0.2)
         moveVec += objVec;
 
     //----- Output - move -----//
@@ -134,6 +139,7 @@ void PusherScript::moveAroundObject() {
 void PusherScript::pushObject() { PusherCommon::pushObject(_entity, _pusher); }
 
 void PusherScript::beAGoal() {
-    if (_pusher->canSeeGoal() || _pusher->timer >= PusherComponent::beAGoalTimeout || _pusher->objectDistance == 0.0f)
+    if (_pusher->canSeeGoal() || _pusher->timer >= PusherComponent::beAGoalTimeout ||
+        (_pusher->objectDistance == 0.0f && PusherCommon::distInDirection(_irs, _pusher->objectDirection) < 0.1))
         PusherCommon::changeState(_pusher, PusherComponent::RANDOM_WALK);
 }

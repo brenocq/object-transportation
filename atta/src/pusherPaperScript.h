@@ -29,6 +29,7 @@ class PusherPaperScript : public scr::Script {
 
     PusherComponent* _pusher;
     std::array<cmp::CameraSensor*, 4> _cams;
+    std::array<float, 8> _irs;
 };
 
 ATTA_REGISTER_SCRIPT(PusherPaperScript)

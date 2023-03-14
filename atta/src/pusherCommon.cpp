@@ -46,6 +46,13 @@ void PusherCommon::move(cmp::Entity entity, atta::vec2 direction) {
 
 atta::vec2 PusherCommon::dirToVec(float dir) { return {std::cos(dir), std::sin(dir)}; }
 
+float PusherCommon::distInDirection(const std::array<float, 8>& irs, float dir) {
+    int idx = std::round((dir + M_PI) / (2 * M_PI) * 8 - 4);
+    if (idx < 0)
+        idx = 8 + idx;
+    return irs[idx];
+}
+
 float calcDirection(std::array<cmp::CameraSensor*, 4> cams, unsigned y, Color color) {
     // Create row of colors
     std::array<const uint8_t*, 4> images = {cams[0]->getImage(), cams[1]->getImage(), cams[2]->getImage(), cams[3]->getImage()};
@@ -125,9 +132,10 @@ float calcDirection(std::array<cmp::CameraSensor*, 4> cams, unsigned y, Color co
     return meanPos * M_PI * 0.5;
 }
 
-void PusherCommon::approachObject(cmp::Entity entity, PusherComponent* pusher) {
-    const float minDist = 0.15f;  // Minimum distance to the object to change state
-    const float minAngle = 0.15f; // The front angle interval is [-minAngle, minAngle]
+void PusherCommon::approachObject(cmp::Entity entity, PusherComponent* pusher, const std::array<float, 8>& irs) {
+    const float minCamDist = 0.15f; // Minimum distance to the object to change state (using Camera)
+    const float minIrDist = 0.1f;   // Minimum distance to the object to change state (using IR)
+    const float minAngle = 0.15f;   // The front angle interval is [-minAngle, minAngle]
 
     if (pusher->canSeeObject() && pusher->canSeeGoal()) {
         float dir = pusher->objectDirection;
@@ -137,7 +145,7 @@ void PusherCommon::approachObject(cmp::Entity entity, PusherComponent* pusher) {
 
         // Check if arrived
         bool isInFront = (dir < minAngle && dir > -minAngle) || (dir < (-M_PI + minAngle) || dir > (M_PI - minAngle));
-        if (pusher->objectDistance < minDist && isInFront) {
+        if (pusher->objectDistance < minCamDist && PusherCommon::distInDirection(irs, pusher->objectDirection) < minIrDist && isInFront) {
             if (pusher->canSeeGoal())
                 PusherCommon::changeState(pusher, PusherComponent::MOVE_AROUND_OBJECT);
             else

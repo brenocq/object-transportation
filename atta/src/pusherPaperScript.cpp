@@ -67,17 +67,6 @@ void PusherPaperScript::randomWalk() {
 void PusherPaperScript::approachObject() { PusherCommon::approachObject(_entity, _pusher); }
 
 void PusherPaperScript::moveAroundObject() {
-    //----- Initialize state -----//
-    if (_pusher->timer == _dt) {
-        // Choose to move around cw/ccw
-        _pusher->clockwise = _pusher->goalDirection > 0;
-    }
-
-    //----- Parameters -----//
-    atta::vec2 moveVec(1.0f, 0.0f); // Robot move vector (X is to the forward, Y is left)
-    const float minDist = 0.1f;
-    const float maxDist = 0.25f;
-
     //----- Check lost object -----//
     if (!_pusher->canSeeObject()) {
         PusherCommon::changeState(_pusher, PusherComponent::RANDOM_WALK);
@@ -89,6 +78,17 @@ void PusherPaperScript::moveAroundObject() {
         PusherCommon::changeState(_pusher, PusherComponent::PUSH_OBJECT);
         return;
     }
+
+    //----- Initialize state -----//
+    if (_pusher->timer == _dt) {
+        // Choose to move around cw/ccw
+        _pusher->clockwise = _pusher->goalDirection > 0;
+    }
+
+    //----- Parameters -----//
+    atta::vec2 moveVec(1.0f, 0.0f); // Robot move vector (X is to the forward, Y is left)
+    const float minDist = 0.1f;
+    const float maxDist = 0.25f;
 
     //----- Timeout -----//
     // If timer reached zero

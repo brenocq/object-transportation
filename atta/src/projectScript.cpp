@@ -89,17 +89,38 @@ struct Experiment {
     std::string script = "PusherScript";
 };
 
-const float gTimeout = 30.0f;// Global timeout in seconds
+const float gTimeout = 180.0f;// Global timeout in seconds
 std::vector<Experiment> experiments = {
-    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
-    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherPaperScript"},
-    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherPaperScript"},
-    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherPaperScript"},
+    {.numRepetitions = 30, .numRobots =  5, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 30, .numRobots = 10, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 30, .numRobots = 15, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 30, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 30, .numRobots = 30, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
 
-    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots =  5, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots =  5, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots =  5, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots =  5, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+
+    {.numRepetitions = 30, .numRobots = 10, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 10, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 10, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 10, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+
+    {.numRepetitions = 30, .numRobots = 15, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 15, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 15, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 15, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+
+    {.numRepetitions = 30, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+
+    {.numRepetitions = 30, .numRobots = 30, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 30, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 30, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    {.numRepetitions = 30, .numRobots = 30, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
 };
 
 //---------- Project Script ----------//

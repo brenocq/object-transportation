@@ -9,8 +9,14 @@
 
 void PusherCommon::changeState(PusherComponent* pusher, PusherComponent::State state) {
     // LOG_DEBUG("Pusher" + std::to_string(_entity.getCloneId()), "Changed to state $0", int(state));
+
+    // Don't reset the timer if changed between MOVE_AROUND_OBJECT and PUSH_OBJECT
+    if (state == PusherComponent::RANDOM_WALK || pusher->state == PusherComponent::RANDOM_WALK || state == PusherComponent::BE_A_GOAL ||
+        pusher->state == PusherComponent::BE_A_GOAL)
+        pusher->timer = 0.0f;
+
+    // Change state
     pusher->state = state;
-    pusher->timer = 0.0f;
 }
 
 void PusherCommon::move(cmp::Entity entity, atta::vec2 direction) {
@@ -130,7 +136,7 @@ void PusherCommon::moveAroundObject(cmp::Entity entity, PusherComponent* pusher,
 
     //----- Timeout -----//
     // If timer reached zero
-    if (pusher->timer >= PusherComponent::moveAroundObjectTimeout) {
+    if (pusher->timer >= PusherComponent::pushObjectTimeout) {
         PusherCommon::changeState(pusher, PusherComponent::RANDOM_WALK);
         return;
     }
@@ -330,8 +336,11 @@ void PusherCommon::processCameras(PusherComponent* pusher, std::array<cmp::Camer
             }
         }
 
-    // Update angle between goal and object greater than 90
     if (pusher->canSeeGoal() && pusher->canSeeObject())
+        // Update angle between goal and object greater than 90
         pusher->angleGreater90 = angleDistance(pusher->goalDirection, pusher->objectDirection) > M_PI / 2.0f;
+    else if(pusher->canSeeGoal() && !pusher->canSeeObject())
+        // Don't do angle check if only goal is visible
+        pusher->angleGreater90 = true;
 }
 

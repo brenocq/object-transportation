@@ -73,8 +73,8 @@ std::map<std::string, MapInfo> maps = {
             .objectPos = {-1.0f, -1.0f},
             .walls =
                 {
-                    {.pos = {-0.5f, -0.5f}, .size = {2.0f, 0.1f}},
-                    {.pos = {0.5f, 0.5f}, .size = {2.0f, 0.1f}},
+                    {.pos = {-0.5f, -0.5f}, .size = {2.0f, 0.3f}},
+                    {.pos = {0.5f, 0.5f}, .size = {2.0f, 0.3f}},
                 },
         },
     },
@@ -89,7 +89,7 @@ struct Experiment {
     std::string script = "PusherScript";
 };
 
-const float gTimeout = 180.0f;// Global timeout in seconds
+const float gTimeout = 20 * 60.0f; // Global timeout in seconds
 std::vector<Experiment> experiments = {
     {.numRepetitions = 30, .numRobots =  5, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
     {.numRepetitions = 30, .numRobots = 10, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
@@ -197,7 +197,9 @@ void ProjectScript::selectMap(std::string mapName) {
         wall.add<cmp::Mesh>()->set("meshes/cube.obj");
         wall.add<cmp::Material>()->set("obstacle");
         wall.add<cmp::Name>()->set("Map wall");
-        wall.add<cmp::RigidBody2D>()->type = cmp::RigidBody2D::Type::STATIC;
+        auto rb = wall.add<cmp::RigidBody2D>();
+        rb->type = cmp::RigidBody2D::Type::STATIC;
+        rb->friction = 0.0f;
         wall.add<cmp::BoxCollider2D>();
         obstR->addChild(obstacles, wall);
     }

@@ -17,13 +17,11 @@ struct PusherComponent final : public cmp::Component {
         PUSH_OBJECT,
         BE_A_GOAL,
     };
-    static constexpr float moveAroundObjectTimeout = 2 * 60.0f;
-    static constexpr float beAGoalTimeout = 2 * 60.0f;
-    static constexpr float pushObjectTimeout = 2 * 60.0f;
+    static constexpr float beAGoalTimeout = 120.0f;
+    static constexpr float pushObjectTimeout = 60.0f;
 
     State state = State::RANDOM_WALK;
     float timer = 0.0f;  // Timer to change state
-    float timer1 = 0.0f; // State specific timer
     float lastFrameTime = 0.0f;
 
     // Auxiliar parameters

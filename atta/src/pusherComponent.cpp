@@ -18,7 +18,6 @@ cmp::ComponentDescription& cmp::TypedComponentRegistry<PusherComponent>::getDesc
              {},
              {"RANDOM_WALK", "APPROACH_OBJECT", "MOVE_AROUND_OBJECT", "PUSH_OBJECT", "BE_A_GOAL"}},
             {AttributeType::FLOAT32, offsetof(PusherComponent, timer), "timer"},
-            {AttributeType::FLOAT32, offsetof(PusherComponent, timer1), "timer1"},
             {AttributeType::FLOAT32, offsetof(PusherComponent, lastFrameTime), "lastFrameTime"},
             {AttributeType::FLOAT32, offsetof(PusherComponent, randomWalkAux), "randomWalkAux"},
             {AttributeType::BOOL, offsetof(PusherComponent, clockwise), "clockwise"},

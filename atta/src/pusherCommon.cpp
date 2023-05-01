@@ -306,7 +306,8 @@ void PusherCommon::processCameras(PusherComponent* pusher, std::array<cmp::Camer
     std::array<const uint8_t*, 4> images = {cams[0]->getImage(), cams[1]->getImage(), cams[2]->getImage(), cams[3]->getImage()};
     const unsigned w = cams[0]->width;
     const unsigned h = cams[0]->height;
-    for (int y = h * 0.85; y >= 0; y--) // Scan from bottom to top (ignore lower pixels where robot is visible)
+    const int startY = h * 0.85;
+    for (int y = startY; y >= 0; y--) // Scan from bottom to top (ignore lower pixels where robot is visible)
         for (unsigned x = 0; x < w * 4; x++) {
             // Get pixel values
             const uint8_t* img = images[x / w];
@@ -331,7 +332,7 @@ void PusherCommon::processCameras(PusherComponent* pusher, std::array<cmp::Camer
                 unsigned idxB = ((y + 1) * w + (x % w)) * 3;
                 Color colorBelow = {img[idxB + 0], img[idxB + 1], img[idxB + 2]};
                 // Check if pixel is object is pixel below is not pusher
-                if (color == objectColor && colorBelow != pusherColor && colorBelow != objectColor)
+                if (color == objectColor && colorBelow != pusherColor && (y == startY || colorBelow != objectColor))
                     pusher->pushDirection = calcDirection(cams, y, objectColor);
             }
         }

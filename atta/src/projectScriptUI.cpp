@@ -81,6 +81,7 @@ void ProjectScript::uiPusherInspector() {
             std::vector<sns::CameraInfo>& snsCams = sns::getCameraInfos();
 
             // Show camera images
+            ImVec2 cursor = ImGui::GetCursorScreenPos(); // Image cursor position
             for (auto cam : cams)
                 if (cam->captureTime >= 0.0f)
                     for (uint32_t i = 0; i < snsCams.size(); i++)
@@ -89,6 +90,25 @@ void ProjectScript::uiPusherInspector() {
                             if (cam != cams.back())
                                 ImGui::SameLine(0.0f, 0.0f);
                         }
+
+            // Draw direction lines
+            ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+            PusherComponent* pusher = clone.get<PusherComponent>();
+            constexpr int gap = 5;
+            if (pusher->canSeeObject()) {
+                float x = cursor.x + int((75 * 0.5) + (pusher->objectDirection) / M_PI * 150 + 300) % 300;
+                float y = cursor.y + pusher->objectDistance * 75;
+                drawList->AddLine(ImVec2(x, cursor.y - gap), ImVec2(x, cursor.y + 75 + gap), ImColor(255, 0, 255));
+                drawList->AddLine(ImVec2(x - gap, y), ImVec2(x + gap, y), ImColor(255, 0, 255));
+            }
+
+            if (pusher->canSeeGoal()) {
+                float x = cursor.x + int((75 * 0.5) + (pusher->goalDirection) / M_PI * 150 + 300) % 300;
+                float y = cursor.y + pusher->goalDistance * 75;
+                drawList->AddLine(ImVec2(x, cursor.y - gap), ImVec2(x, cursor.y + 75 + gap), ImColor(0, 255, 255));
+                drawList->AddLine(ImVec2(x - gap, y), ImVec2(x + gap, y), ImColor(0, 255, 255));
+            }
         }
     }
 }

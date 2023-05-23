@@ -206,8 +206,9 @@ float calcDirection(std::array<cmp::CameraSensor*, 4> cams, unsigned y, Color co
     std::array<const uint8_t*, 4> images = {cams[0]->getImage(), cams[1]->getImage(), cams[2]->getImage(), cams[3]->getImage()};
     const unsigned w = cams[0]->width;
     const unsigned h = cams[0]->height;
-    std::vector<Color> row(w * 4);
 
+    // Initialize row to compute
+    std::vector<Color> row(w * 4);
     for (unsigned i = 0; i < w * 4; i++) {
         const uint8_t* img = images[i / w];
         unsigned idx = (y * w + (i % w)) * 3;
@@ -252,12 +253,10 @@ float calcDirection(std::array<cmp::CameraSensor*, 4> cams, unsigned y, Color co
 
         // Calculate size
         unsigned size = 0;
-        if (start < end)
-            size = end - start;
-        else if (start == end)
-            size = 1;
+        if (start <= end)
+            size = end - start + 1;
         else
-            size = end + w - size;
+            size = (row.size() - start) + end + 1;
 
         // Update largest
         if (size >= sizeLargest) {
@@ -269,9 +268,9 @@ float calcDirection(std::array<cmp::CameraSensor*, 4> cams, unsigned y, Color co
     // Calculate direction to largest interval
     auto interval = intervals[idxLargest];
     // Calculate mean pixel position
-    int pixelPos = (interval.first + sizeLargest / 2) % (w * 4);
+    int pixelPos = (interval.first + sizeLargest / 2) % row.size();
     // Convert to [0,1]
-    float meanPos = pixelPos / float(w * 4);
+    float meanPos = pixelPos / float(row.size());
     // Convert to [-2, 2] (and rotate so 0.0 is to the front)
     meanPos = (meanPos * 4 - 0.5);
     if (meanPos > 2)
@@ -340,7 +339,7 @@ void PusherCommon::processCameras(PusherComponent* pusher, std::array<cmp::Camer
     if (pusher->canSeeGoal() && pusher->canSeeObject())
         // Update angle between goal and object greater than 90
         pusher->angleGreater90 = angleDistance(pusher->goalDirection, pusher->objectDirection) > M_PI / 2.0f;
-    else if(pusher->canSeeGoal() && !pusher->canSeeObject())
+    else if (pusher->canSeeGoal() && !pusher->canSeeObject())
         // Don't do angle check if only goal is visible
         pusher->angleGreater90 = true;
 }

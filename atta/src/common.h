@@ -20,7 +20,7 @@ struct Color {
     uint8_t b;
     Color() = default;
     Color(uint8_t red, uint8_t green, uint8_t blue) : r(red), g(green), b(blue) {}
-    bool operator==(const Color& o) const { return (o.r == r) && (o.g == g) && (o.b == b); }
+    bool operator==(const Color& o) const { return std::abs(o.r - r) <= 5 && std::abs(o.g - g) <= 5 && std::abs(o.b - b) <= 5; }
     bool operator!=(const Color& o) const { return !(o == *this); }
 };
 inline const Color goalColor(0, 255, 0);

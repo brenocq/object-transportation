@@ -13,8 +13,9 @@ void ProjectScript::runExperiments() {
         const atta::vec2 goalScale = atta::vec2(goal.get<cmp::Transform>()->scale.x);
         const float pusherDiam = pusherProto.get<cmp::Transform>()->scale.x;
         const float gap = 0.05;
-        //const float minDist = (goalScale.x + objScale.length()) * 0.5 + gap;// <-- Box
-        const float minDist = (goalScale.x + objScale.x) * 0.5 + gap;// <-- Circle
+        // const float minDist = (goalScale.x + objScale.length()) * 0.5 + gap; // <-- Box
+        // const float minDist = (goalScale.x + objScale.x) * 0.5 + gap; // <-- Circle
+        const float minDist = (goalScale.x + objScale.x) * 0.5 + gap; // <-- Triangle
 
         // If last experiment finished (simulation not running), start new one
         if (atta::Config::getState() == atta::Config::State::IDLE) {

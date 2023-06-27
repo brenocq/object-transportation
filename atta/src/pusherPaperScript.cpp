@@ -54,6 +54,6 @@ void PusherPaperScript::randomWalk() { PusherCommon::randomWalk(_entity, _pusher
 
 void PusherPaperScript::approachObject() { PusherCommon::approachObject(_entity, _pusher, _irs, true); }
 
-void PusherPaperScript::moveAroundObject() { PusherCommon::moveAroundObject(_entity, _pusher, _irs, _dt, true); }
+void PusherPaperScript::moveAroundObject() { PusherCommon::moveAroundObject(_entity, _pusher, _irs, _dt, false); }
 
 void PusherPaperScript::pushObject() { PusherCommon::pushObject(_entity, _pusher); }

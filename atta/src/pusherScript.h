@@ -9,6 +9,7 @@
 #include <atta/component/components/cameraSensor.h>
 #include <atta/component/components/infraredSensor.h>
 #include <atta/script/script.h>
+#include <atta/script/interface.h>
 
 namespace cmp = atta::component;
 namespace scr = atta::script;

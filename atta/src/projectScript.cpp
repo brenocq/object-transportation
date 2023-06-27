@@ -91,36 +91,36 @@ struct Experiment {
 
 const float gTimeout = 20 * 60.0f; // Global timeout in seconds
 std::vector<Experiment> experiments = {
-     {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
-     {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
-     {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
-     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
-     {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
 
-     {.numRepetitions = 10, .numRobots = 5, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
 
-     {.numRepetitions = 10, .numRobots = 10, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
 
-     {.numRepetitions = 10, .numRobots = 15, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
 
-     {.numRepetitions = 10, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
 
-     {.numRepetitions = 10, .numRobots = 30, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-     {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
 };
 
 //---------- Project Script ----------//
@@ -182,7 +182,7 @@ void ProjectScript::selectMap(std::string mapName) {
     cmp::Transform* ot = object.get<cmp::Transform>();
     cmp::Transform* gt = goal.get<cmp::Transform>();
     ot->position = atta::vec3(map.objectPos, ot->position.z);
-    ot->orientation.set2DAngle(0.0f);
+    ot->orientation.set2DAngle((rand() / float(RAND_MAX)) * 2 * M_PI);
     gt->position = atta::vec3(map.goalPos, gt->position.z);
     gt->orientation.set2DAngle(0.0f);
 

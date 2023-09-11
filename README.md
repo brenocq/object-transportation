@@ -1,5 +1,4 @@
-# box-pushing
-Occlusion-Based Object Transportation Around Obstacles With a Swarm of Multiple Miniature Robots
+# Occlusion-Based Object Transportation Around Obstacles With a Swarm of Multiple Miniature Robots
 
 This repository contains the code used in MacRae & Queiroz (2023) to perform our experiments utilising a swarm of miniature occlusion-based robots to transport objects in complex environments. An extension of Chen (2015), we augment the purely vision-based finite state machine to enable the robots to form "sub-goals" that allows observing robots to trace a path around obstacles; allowing the robots to successfully complete the object transportation task, while maintaining the decentralised, communication-free and vision-based implementation of the original Chen (2015) strategy.
 

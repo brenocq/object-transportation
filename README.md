@@ -10,11 +10,8 @@ The implementation requires the use of Atta (CITE), which can be found here (LIN
 ![purple-divider](https://user-images.githubusercontent.com/7065401/52071927-c1cd7100-2562-11e9-908a-dde91ba14e59.png)
 
 ### Abstract
-<details>
-<summary>Abstract</summary>
-<br>
+
 Swarm robotics utilises decentralised self-organising systems to form complex collective behaviours built from the bottom-up using individuals that have simple, yet limited, capabilities. Previous works have explored the use of swarm robotics for the task of transporting objects to a goal position. In this paper, we propose an improvement to an occlusion-based strategy for such a task that enables the strategy to work in environments where obstacles block the line-of-sight between the object and the goal. Our approach allows the robots to form sub-goals; allowing any member of the swarm to establish a wider range of visibility of the goal, ultimately forming a chain of sub-goals between the object and the goal position. We maintain the fully decentralised and communication-free nature of the original strategy. In three sets of simulated experiments, we demonstrate that our proposed approach allows a swarm of sufficient size to successfully transport objects around obstacles that occlude the goal from the starting position of the object, that this strategy is robust to different object shapes, and that our proposed changes do not reduce the performance of the strategy in environments where obstacles are not present.
-</details>
 
 
 ![purple-divider](https://user-images.githubusercontent.com/7065401/52071927-c1cd7100-2562-11e9-908a-dde91ba14e59.png)

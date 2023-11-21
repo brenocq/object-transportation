@@ -1,7 +1,0 @@
-/worlds/.box-pushing.wbproj
-/worlds/.box-pushing.jpg
-/controllers/supervisor/*.json
-/controllers/supervisor/*.csv
-/controllers/supervisor/*.png
-
-__pycache__/

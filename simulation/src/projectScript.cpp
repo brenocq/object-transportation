@@ -9,9 +9,11 @@
 
 #include "imgui.h"
 #include <atta/component/components/boxCollider2D.h>
+#include <atta/component/components/circleCollider2D.h>
 #include <atta/component/components/material.h>
 #include <atta/component/components/mesh.h>
 #include <atta/component/components/name.h>
+#include <atta/component/components/polygonCollider2D.h>
 #include <atta/component/components/prototype.h>
 #include <atta/component/components/relationship.h>
 #include <atta/component/components/rigidBody2D.h>
@@ -86,41 +88,42 @@ struct Experiment {
     int numRobots = 20;
     float timeout = 60.0f;
     std::string map = "reference";
+    std::string object = "circle";
     std::string script = "PusherScript";
 };
 
 const float gTimeout = 20 * 60.0f; // Global timeout in seconds
 std::vector<Experiment> experiments = {
-    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
-    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
-    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
-    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
-    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
 
-    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
 
-    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
 
-    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
 
-    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
 
-    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "middle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "corner", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "2-corners", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
+    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
 };
 
 //---------- Project Script ----------//
@@ -128,6 +131,7 @@ void ProjectScript::onLoad() {
     _currentExperiment = 0;
     _runExperiments = false;
     selectMap("reference");
+    selectObject("circle");
 }
 
 void ProjectScript::onUnload() { resetMap(); }
@@ -222,6 +226,33 @@ void ProjectScript::resetMap() {
     std::vector<cmp::Entity> obst = obstR->getChildren();
     for (unsigned i = 4; i < obst.size(); i++)
         cmp::deleteEntity(obst[i]);
+}
+
+void ProjectScript::selectObject(std::string objectName) {
+    cmp::Transform oldT = *object.get<cmp::Transform>();
+    cmp::RigidBody2D oldRB = *object.get<cmp::RigidBody2D>();
+    cmp::deleteEntity(object);
+    cmp::createEntity(object);
+    *(object.add<cmp::Transform>()) = oldT;
+    *(object.add<cmp::RigidBody2D>()) = oldRB;
+    object.add<cmp::Name>()->set("Object");
+    object.add<cmp::Material>()->set("object");
+
+    if (objectName == "square" || objectName == "rectangle") {
+        object.get<cmp::Transform>()->scale = objectName == "square" ? atta::vec3(0.4f, 0.4f, 0.2f) : atta::vec3(0.6f, 0.15f, 0.2f);
+        object.add<cmp::Mesh>()->set("meshes/cube.obj");
+        object.add<cmp::BoxCollider2D>();
+    } else if (objectName == "circle") {
+        object.get<cmp::Transform>()->scale = {0.4f, 0.4f, 0.2f};
+        object.add<cmp::Mesh>()->set("meshes/cylinder.obj");
+        object.add<cmp::CircleCollider2D>();
+    } else if (objectName == "triangle") {
+        object.get<cmp::Transform>()->scale = {0.5f, 0.5f, 0.2f};
+        object.add<cmp::Mesh>()->set("triangle-object.obj");
+        object.add<cmp::PolygonCollider2D>()->points = {{0.2, 0.2}, {-0.4, 0.2}, {0.2, -0.6}, {0.2, 0.2}};
+    }
+
+    _currentObject = objectName;
 }
 
 void ProjectScript::randomizePushers() {

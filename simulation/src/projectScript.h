@@ -26,6 +26,8 @@ class ProjectScript : public scr::ProjectScript {
     // Map handling
     void selectMap(std::string mapName);
     void resetMap();
+    // Object handling
+    void selectObject(std::string objectName);
     // Pusher handling
     void randomizePushers();
 
@@ -43,6 +45,7 @@ class ProjectScript : public scr::ProjectScript {
     int _currentExperiment;
     int _currentRepetition;
     std::string _currentMap;
+    std::string _currentObject;
     std::vector<atta::vec2> _objectPath;
     nlohmann::json _experimentResults;
 };

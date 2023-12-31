@@ -8,17 +8,31 @@ void ProjectScript::uiControl() {
     ImGui::Text("Control");
 
     //----- Select map -----//
-    static const char* options[] = {"reference", "middle", "corner", "2-corners"};
+    static const char* optionsMap[] = {"reference", "middle", "corner", "2-corners"};
     int selectedMap = 0;
     for (int i = 0; i < 4; i++)
-        if (_currentMap == std::string(options[i])) {
+        if (_currentMap == std::string(optionsMap[i])) {
             selectedMap = i;
             break;
         }
 
     ImGui::SetNextItemWidth(100.0f);
-    if (ImGui::Combo("Map##ComboMap", &selectedMap, options, 4)) {
-        selectMap(options[selectedMap]);
+    if (ImGui::Combo("Map##ComboMap", &selectedMap, optionsMap, 4)) {
+        selectMap(optionsMap[selectedMap]);
+    }
+
+    //----- Select object -----//
+    static const char* optionsObject[] = {"square", "rectangle", "circle", "triangle"};
+    int selectedObject = 0;
+    for (int i = 0; i < 4; i++)
+        if (_currentObject == std::string(optionsObject[i])) {
+            selectedObject = i;
+            break;
+        }
+
+    ImGui::SetNextItemWidth(100.0f);
+    if (ImGui::Combo("Object##ComboObject", &selectedObject, optionsObject, 4)) {
+        selectObject(optionsObject[selectedObject]);
     }
 
     //----- Randomize pusher -----//

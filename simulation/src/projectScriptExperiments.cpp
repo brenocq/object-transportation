@@ -13,9 +13,13 @@ void ProjectScript::runExperiments() {
         const atta::vec2 goalScale = atta::vec2(goal.get<cmp::Transform>()->scale.x);
         const float pusherDiam = pusherProto.get<cmp::Transform>()->scale.x;
         const float gap = 0.05;
-        // const float minDist = (goalScale.x + objScale.length()) * 0.5 + gap; // <-- Box
-        // const float minDist = (goalScale.x + objScale.x) * 0.5 + gap; // <-- Circle
-        const float minDist = (goalScale.x + objScale.x) * 0.5 + gap; // <-- Triangle
+        float minDist = 0.0f;
+        if (_currentObject == "square" || _currentObject == "rectangle")
+            minDist = (goalScale.x + objScale.length()) * 0.5 + gap;
+        else if (_currentObject == "circle")
+            minDist = (goalScale.x + objScale.x) * 0.5 + gap;
+        else if (_currentObject == "triangle")
+            minDist = (goalScale.x + objScale.x) * 0.5 + gap;
 
         // If last experiment finished (simulation not running), start new one
         if (atta::Config::getState() == atta::Config::State::IDLE) {
@@ -23,6 +27,7 @@ void ProjectScript::runExperiments() {
             pusherProto.get<cmp::Prototype>()->maxClones = exp.numRobots;
             pusherProto.get<cmp::Script>()->set(exp.script);
             selectMap(exp.map);
+            selectObject(exp.object);
 
             // JSON config
             if (_currentRepetition == 0) {

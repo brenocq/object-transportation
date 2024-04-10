@@ -1,9 +1,12 @@
 # Occlusion-Based Object Transportation Around Obstacles With a Swarm of Multiple Miniature Robots
 <p align="center">
-    <img src="https://github.com/brenocq/object-transportation/assets/17342434/e2ac83ec-ddfb-4cd6-96aa-63b75f64dda1"/>
+    <img src="https://github.com/brenocq/object-transportation/assets/17342434/4cbb3ed4-8312-40ad-bd78-a8689183c28c" alt="reference" height="150"/>
+    <img src="https://github.com/brenocq/object-transportation/assets/17342434/666ced7e-674a-41ea-b504-932712852404" alt="2-corners" height="150"/>
+    <img src="https://github.com/brenocq/object-transportation/assets/17342434/ef436352-b0ef-49ca-817f-83aa66fb96ba" alt="corner" height="150"/>
+    <img src="https://github.com/brenocq/object-transportation/assets/17342434/0e251481-4094-42f1-a914-2df768f6217b" alt="middle" height="150"/>
 </p>
 
-This repository contains the code used in MacRae & Queiroz (2023) to perform our experiments utilising a swarm of miniature occlusion-based robots to transport objects in complex environments. An extension of Chen (2015), we augment the purely vision-based finite state machine to enable the robots to form "sub-goals" that allows observing robots to trace a path around obstacles; allowing the robots to successfully complete the object transportation task, while maintaining the decentralised, communication-free and vision-based implementation of the original Chen (2015) strategy.
+This repository contains the code used in Queiroz & MacRae (2024) to perform our experiments utilising a swarm of miniature occlusion-based robots to transport objects in complex environments. An extension of Chen (2015), we augment the purely vision-based finite state machine to enable the robots to form "sub-goals" that allows observing robots to trace a path around obstacles; allowing the robots to successfully complete the object transportation task, while maintaining the decentralised, communication-free and vision-based implementation of the original Chen (2015) strategy.
 
 ### Execution
 The simulation was implemented with [Atta](https://github.com/brenocq/atta), and it is necessary to install its dependencies to execute it. These are the dependencies for Ubuntu, if you are using another Linux distribution, or another operating system, follow the steps in the [Atta README](https://github.com/brenocq/atta).
@@ -28,7 +31,7 @@ atta object-transportation.atta
 ```
 
 ### Abstract
-Swarm robotics utilises decentralised self-organising systems to form complex collective behaviours built from the bottom-up using individuals that have simple, yet limited, capabilities. Previous works have explored the use of swarm robotics for the task of transporting objects to a goal position. In this paper, we propose an improvement to an occlusion-based strategy for such a task that enables the strategy to work in environments where obstacles block the line-of-sight between the object and the goal. Our approach allows the robots to form sub-goals; allowing any member of the swarm to establish a wider range of visibility of the goal, ultimately forming a chain of sub-goals between the object and the goal position. We maintain the fully decentralised and communication-free nature of the original strategy. In three sets of simulated experiments, we demonstrate that our proposed approach allows a swarm of sufficient size to successfully transport objects around obstacles that occlude the goal from the starting position of the object, that this strategy is robust to different object shapes, and that our proposed changes do not reduce the performance of the strategy in environments where obstacles are not present.
+Swarm robotics utilises decentralised self-organising systems to form complex collective behaviours built from the bottom-up using individuals that have limited capabilities. Previous work has shown that simple occlusion-based strategies can be effective in using swam robotics for the task of transporting objects to a goal position. However, this strategy requires a clear line-of-sight between object and goal. In this paper, we extend this strategy by allowing robots to form sub-goals; enabling any member of the swarm to establish a wider range of visibility of the goal, ultimately forming a chain of sub-goals between the object and the goal position. We do so while maintaining the fully decentralised and communication-free nature of the original strategy. In three sets of simulated experiments, we demonstrate that our proposed approach allows a swarm of sufficient size to successfully transport objects around obstacles that occlude the goal from the starting position of the object, that this strategy is robust to different object shapes, and that our proposed changes do not reduce the performance of the strategy in environments where obstacles are not present.
 
 
 ### State Machine
@@ -54,7 +57,7 @@ Because the approach proposed by Chen (2015) can only transport the object to th
 Please refer to the paper for more in-depth evaluation of the proposed state machine.
 
 ### References
-- MacRae, D., Queiroz, B.C. (2023) _Occlusion-Based Object Transportation Around Obstacles With a Swarm of Multiple Miniature Robots_  
+- Queiroz, B.C., MacRae, D. (2024) _Occlusion-Based Object Transportation Around Obstacles With a Swarm of Multiple Miniature Robots._
 <span style="color:red">TBD</span>.
 - Chen, J., Gauci, M., Li, W., Kolling, A., Groß, R. (2015). _Occlusion-based cooperative transport with a swarm of miniature mobile robots._ IEEE Transactions on Robotics, 31 , 307-321, https://doi.org/10.1109/TRO.2015.2400731
 

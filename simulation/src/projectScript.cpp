@@ -94,36 +94,58 @@ struct Experiment {
 
 const float gTimeout = 20 * 60.0f; // Global timeout in seconds
 std::vector<Experiment> experiments = {
-    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
-    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
-    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
-    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
-    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherPaperScript"},
+    // Experiments on the obstacle-free map
+    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherPaperScript"},
+    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherPaperScript"},
 
-    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherScript"},
 
-    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
+    // Experiments on maps with obstacles
+    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "corner", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "corner", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "corner", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "corner", .object = "square", .script = "PusherScript"},
 
-    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "2-corners", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "2-corners", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "2-corners", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "2-corners", .object = "square", .script = "PusherScript"},
+
+    {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "middle", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "middle", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "middle", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "middle", .object = "square", .script = "PusherScript"},
+
+    // Experiments with different shapes
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "circle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "circle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "circle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "circle", .script = "PusherScript"},
+
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "square", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "square", .script = "PusherScript"},
+
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "rectangle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "rectangle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "rectangle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "rectangle", .script = "PusherScript"},
 
     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
-
-    {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
-    //{.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "triangle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "triangle", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .script = "PusherScript"},
 };
 
 //---------- Project Script ----------//

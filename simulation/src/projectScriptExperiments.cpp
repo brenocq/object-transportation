@@ -7,6 +7,10 @@
 void ProjectScript::runExperiments() {
     if (_runExperiments) {
         const Experiment exp = experiments[_currentExperiment];
+        _currentMap = exp.map;
+        _currentObject = exp.object;
+        _currentInitialPos = exp.initialPos;
+
         const atta::vec2 objPos = atta::vec2(object.get<cmp::Transform>()->position);
         const atta::vec2 goalPos = atta::vec2(goal.get<cmp::Transform>()->position);
         const atta::vec2 objScale = atta::vec2(object.get<cmp::Transform>()->scale.x);
@@ -26,8 +30,8 @@ void ProjectScript::runExperiments() {
             // Set parameters
             pusherProto.get<cmp::Prototype>()->maxClones = exp.numRobots;
             pusherProto.get<cmp::Script>()->set(exp.script);
-            selectMap(exp.map);
-            selectObject(exp.object);
+            selectMap(_currentMap);
+            selectObject(_currentObject);
 
             // JSON config
             if (_currentRepetition == 0) {
@@ -77,8 +81,9 @@ void ProjectScript::runExperiments() {
             _currentRepetition++;
             if (_currentRepetition == exp.numRepetitions) {
                 fs::create_directory("experiments");
-                fs::path file = fs::path("experiments") / std::string(exp.map + "-" + exp.script + "-" + std::to_string(exp.numRobots) + "_robots" +
-                                                                      "-" + std::to_string(exp.numRepetitions) + "_rep.json");
+                fs::path file = fs::path("experiments") / std::string(exp.initialPos + "_init-" + exp.map + "-" + exp.script + "-" + std::to_string(exp.numRobots) + "_robots-" +
+                                                                      exp.object + "-" + std::to_string(exp.numRepetitions) +
+                                                                      "_rep.json");
                 std::ofstream out(file);
                 LOG_INFO("ProjectScript", "Experiment [w]$0[] saved to [w]$1[]", file.stem().string(), fs::absolute(file));
                 out << _experimentResults;

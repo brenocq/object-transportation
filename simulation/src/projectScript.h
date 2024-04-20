@@ -29,7 +29,7 @@ class ProjectScript : public scr::ProjectScript {
     // Object handling
     void selectObject(std::string objectName);
     // Pusher handling
-    void randomizePushers();
+    void randomizePushers(std::string initalPos);
 
     //---------- Experiments ----------//
     void runExperiments();
@@ -46,6 +46,7 @@ class ProjectScript : public scr::ProjectScript {
     int _currentRepetition;
     std::string _currentMap;
     std::string _currentObject;
+    std::string _currentInitialPos;
     std::vector<atta::vec2> _objectPath;
     nlohmann::json _experimentResults;
 };

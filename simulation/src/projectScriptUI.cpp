@@ -35,9 +35,24 @@ void ProjectScript::uiControl() {
         selectObject(optionsObject[selectedObject]);
     }
 
+    //----- Select initial position -----//
+    static const char* optionsInitialPos[] = {"random", "top", "bottom"};
+    int selectedInitialPos = 0;
+    for (int i = 0; i < 3; i++)
+        if (_currentInitialPos == std::string(optionsInitialPos[i])) {
+            selectedInitialPos = i;
+            break;
+        }
+
+    ImGui::SetNextItemWidth(100.0f);
+    if (ImGui::Combo("Initial robot positions##ComboInitialPos", &selectedInitialPos, optionsInitialPos, 3)) {
+        _currentInitialPos = optionsInitialPos[selectedInitialPos];
+        randomizePushers(_currentInitialPos);
+    }
+
     //----- Randomize pusher -----//
     if (ImGui::Button("Randomize pushers"))
-        randomizePushers();
+        randomizePushers(_currentInitialPos);
 }
 
 void ProjectScript::uiExperiment() {
@@ -71,6 +86,8 @@ void ProjectScript::uiExperiment() {
             ImGui::Text("Parameters:", _currentRepetition + 1, experiments[_currentExperiment].numRepetitions);
             ImGui::Text(" - Num robots: %d", experiments[_currentExperiment].numRobots);
             ImGui::Text(" - Map: %s", experiments[_currentExperiment].map.c_str());
+            ImGui::Text(" - Object: %s", experiments[_currentExperiment].object.c_str());
+            ImGui::Text(" - Inital Pos: %s", experiments[_currentExperiment].initialPos.c_str());
             ImGui::Text(" - Script: %s", experiments[_currentExperiment].script.c_str());
         }
     }

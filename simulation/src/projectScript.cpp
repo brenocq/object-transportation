@@ -17,6 +17,7 @@
 #include <atta/component/components/prototype.h>
 #include <atta/component/components/relationship.h>
 #include <atta/component/components/rigidBody2D.h>
+#include <atta/component/components/rigidJoint.h>
 #include <atta/component/components/script.h>
 #include <atta/component/components/transform.h>
 #include <atta/event/events/simulationStart.h>
@@ -317,9 +318,15 @@ void ProjectScript::selectMap(std::string mapName) {
 
     // Move goal/object
     cmp::Transform* ot = object.get<cmp::Transform>();
-    cmp::Transform* gt = goal.get<cmp::Transform>();
     ot->position = atta::vec3(map.objectPos, ot->position.z);
     ot->orientation.set2DAngle((rand() / float(RAND_MAX)) * 2 * M_PI);
+    if (_currentObject == "plus") {
+        cmp::Transform* ot1 = objectPart1.get<cmp::Transform>();
+        ot1->position = ot->position;
+        ot1->orientation = ot->orientation;
+    }
+
+    cmp::Transform* gt = goal.get<cmp::Transform>();
     gt->position = atta::vec3(map.goalPos, gt->position.z);
     gt->orientation.set2DAngle(0.0f);
 
@@ -365,11 +372,19 @@ void ProjectScript::selectObject(std::string objectName) {
     cmp::Transform oldT = *object.get<cmp::Transform>();
     cmp::RigidBody2D oldRB = *object.get<cmp::RigidBody2D>();
     cmp::deleteEntity(object);
+    cmp::deleteEntity(objectPart1);
+    cmp::deleteEntity(objectPart2);
     cmp::createEntity(object);
+    cmp::createEntity(objectPart1);
+    cmp::createEntity(objectPart2);
     *(object.add<cmp::Transform>()) = oldT;
     *(object.add<cmp::RigidBody2D>()) = oldRB;
     object.add<cmp::Name>()->set("Object");
+    objectPart1.add<cmp::Name>()->set("Object Part1");
+    objectPart2.add<cmp::Name>()->set("Object Part2");
     object.add<cmp::Material>()->set("object");
+    objectPart1.add<cmp::Material>()->set("object");
+    objectPart2.add<cmp::Material>()->set("object");
 
     if (objectName == "square" || objectName == "rectangle") {
         object.get<cmp::Transform>()->scale = objectName == "square" ? atta::vec3(0.4f, 0.4f, 0.2f) : atta::vec3(0.6f, 0.15f, 0.2f);
@@ -383,6 +398,19 @@ void ProjectScript::selectObject(std::string objectName) {
         object.get<cmp::Transform>()->scale = {0.5f, 0.5f, 0.2f};
         object.add<cmp::Mesh>()->set("triangle-object.obj");
         object.add<cmp::PolygonCollider2D>()->points = {{0.2, 0.2}, {-0.4, 0.2}, {0.2, -0.6}, {0.2, 0.2}};
+    } else if (objectName == "plus") {
+        object.get<cmp::Transform>()->scale = atta::vec3(0.05f, 0.4f, 0.2f);
+        object.add<cmp::Mesh>()->set("meshes/cube.obj");
+        object.add<cmp::BoxCollider2D>();
+
+        *(objectPart1.add<cmp::Transform>()) = oldT;
+        *(objectPart1.add<cmp::RigidBody2D>()) = oldRB;
+        objectPart1.get<cmp::Transform>()->scale = atta::vec3(0.4f, 0.05f, 0.2f);
+        objectPart1.add<cmp::Mesh>()->set("meshes/cube.obj");
+        objectPart1.add<cmp::BoxCollider2D>();
+        cmp::RigidJoint* rj = objectPart1.add<cmp::RigidJoint>();
+        rj->bodyA = object.getId();
+        rj->bodyB = objectPart1.getId();
     }
 
     _currentObject = objectName;

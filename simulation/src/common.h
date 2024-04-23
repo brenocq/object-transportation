@@ -12,6 +12,8 @@ namespace cmp = atta::component;
 cmp::Entity obstacles(1);
 cmp::Entity pusherProto(7);
 cmp::Entity object(8);
+cmp::Entity objectPart1(24);///< Used to create concave shapes
+cmp::Entity objectPart2(25);///< Used to create concave shapes
 cmp::Entity goal(9);
 
 struct Color {

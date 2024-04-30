@@ -22,7 +22,7 @@ void ProjectScript::uiControl() {
     }
 
     //----- Select object -----//
-    static const char* optionsObject[] = {"square", "rectangle", "circle", "triangle", "plus"};
+    static const char* optionsObject[] = {"square", "rectangle", "circle", "triangle", "plus"/*, "H"*/};
     int selectedObject = 0;
     for (int i = 0; i < 5; i++)
         if (_currentObject == std::string(optionsObject[i])) {

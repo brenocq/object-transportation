@@ -329,7 +329,15 @@ void ProjectScript::selectMap(std::string mapName) {
         cmp::Transform* ot1 = objectPart1.get<cmp::Transform>();
         ot1->position = ot->position;
         ot1->orientation = ot->orientation;
-    }
+    }/* else if (_currentObject == "H") {
+        cmp::Transform* ot1 = objectPart1.get<cmp::Transform>();
+        ot1->position = ot->position;
+        ot1->orientation = ot->orientation;
+
+        cmp::Transform* ot2 = objectPart2.get<cmp::Transform>();
+        ot2->position = ot->position;
+        ot2->orientation = ot->orientation;
+    }*/
 
     cmp::Transform* gt = goal.get<cmp::Transform>();
     gt->position = atta::vec3(map.goalPos, gt->position.z);
@@ -374,6 +382,7 @@ void ProjectScript::resetMap() {
 }
 
 void ProjectScript::selectObject(std::string objectName) {
+    constexpr float objectMass = 5.0f;
     cmp::Transform oldT = *object.get<cmp::Transform>();
     cmp::RigidBody2D oldRB = *object.get<cmp::RigidBody2D>();
     cmp::deleteEntity(object);
@@ -384,6 +393,7 @@ void ProjectScript::selectObject(std::string objectName) {
     cmp::createEntity(objectPart2);
     *(object.add<cmp::Transform>()) = oldT;
     *(object.add<cmp::RigidBody2D>()) = oldRB;
+    object.get<cmp::RigidBody2D>()->mass = objectMass;
     object.add<cmp::Name>()->set("Object");
     objectPart1.add<cmp::Name>()->set("Object Part1");
     objectPart2.add<cmp::Name>()->set("Object Part2");
@@ -416,7 +426,50 @@ void ProjectScript::selectObject(std::string objectName) {
         cmp::RigidJoint* rj = objectPart1.add<cmp::RigidJoint>();
         rj->bodyA = object.getId();
         rj->bodyB = objectPart1.getId();
-    }
+
+        // Divide mass across parts
+        const float partMass = objectMass / 2.0f;
+        object.get<cmp::RigidBody2D>()->mass = partMass;
+        objectPart1.get<cmp::RigidBody2D>()->mass = partMass;
+    } /*else if (objectName == "H") {
+        object.get<cmp::Transform>()->scale = atta::vec3(0.3f, 0.05f, 0.2f);
+        object.add<cmp::Mesh>()->set("meshes/cube.obj");
+        object.add<cmp::BoxCollider2D>();
+
+        // Object part1
+        cmp::Transform* t1 = objectPart1.add<cmp::Transform>();
+        *t1 = oldT;
+        atta::vec3 posVec = {-0.18f, 0.0f, 0.0f};
+        t1->orientation.rotateVector(posVec);
+        t1->position += posVec;
+        *(objectPart1.add<cmp::RigidBody2D>()) = oldRB;
+        objectPart1.get<cmp::Transform>()->scale = atta::vec3(0.05f, 0.4f, 0.2f);
+        objectPart1.add<cmp::Mesh>()->set("meshes/cube.obj");
+        objectPart1.add<cmp::BoxCollider2D>();
+        cmp::RigidJoint* rj1 = objectPart1.add<cmp::RigidJoint>();
+        rj1->bodyA = object.getId();
+        rj1->bodyB = objectPart1.getId();
+
+        // Object part2
+        cmp::Transform* t2 = objectPart2.add<cmp::Transform>();
+        *t2 = oldT;
+        posVec = {0.18f, 0.0f, 0.0f};
+        t2->orientation.rotateVector(posVec);
+        t2->position += posVec;
+        *(objectPart2.add<cmp::RigidBody2D>()) = oldRB;
+        objectPart2.get<cmp::Transform>()->scale = atta::vec3(0.05f, 0.4f, 0.2f);
+        objectPart2.add<cmp::Mesh>()->set("meshes/cube.obj");
+        objectPart2.add<cmp::BoxCollider2D>();
+        cmp::RigidJoint* rj2 = objectPart2.add<cmp::RigidJoint>();
+        rj2->bodyA = object.getId();
+        rj2->bodyB = objectPart2.getId();
+
+        // Divide mass across parts
+        const float partMass = objectMass / 3.0f;
+        object.get<cmp::RigidBody2D>()->mass = partMass;
+        objectPart1.get<cmp::RigidBody2D>()->mass = partMass;
+        objectPart2.get<cmp::RigidBody2D>()->mass = partMass;
+    }*/
 
     _currentObject = objectName;
 }

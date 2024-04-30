@@ -7,8 +7,6 @@
 void ProjectScript::runExperiments() {
     if (_runExperiments) {
         const Experiment exp = experiments[_currentExperiment];
-        _currentMap = exp.map;
-        _currentObject = exp.object;
         _currentInitialPos = exp.initialPos;
 
         const atta::vec2 objPos = atta::vec2(object.get<cmp::Transform>()->position);
@@ -18,11 +16,9 @@ void ProjectScript::runExperiments() {
         const float pusherDiam = pusherProto.get<cmp::Transform>()->scale.x;
         const float gap = 0.05;
         float minDist = 0.0f;
-        if (_currentObject == "square" || _currentObject == "rectangle")
+        if (exp.object == "square" || exp.object == "rectangle")
             minDist = (goalScale.x + objScale.length()) * 0.5 + gap;
-        else if (_currentObject == "circle")
-            minDist = (goalScale.x + objScale.x) * 0.5 + gap;
-        else if (_currentObject == "triangle")
+        else if (exp.object == "circle" || exp.object == "triangle" || exp.object == "plus")
             minDist = (goalScale.x + objScale.x) * 0.5 + gap;
 
         // If last experiment finished (simulation not running), start new one
@@ -30,8 +26,8 @@ void ProjectScript::runExperiments() {
             // Set parameters
             pusherProto.get<cmp::Prototype>()->maxClones = exp.numRobots;
             pusherProto.get<cmp::Script>()->set(exp.script);
-            selectMap(_currentMap);
-            selectObject(_currentObject);
+            selectMap(exp.map);
+            selectObject(exp.object);
 
             // JSON config
             if (_currentRepetition == 0) {

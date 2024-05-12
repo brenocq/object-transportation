@@ -18,7 +18,7 @@ void ProjectScript::runExperiments() {
         float minDist = 0.0f;
         if (exp.object == "square" || exp.object == "rectangle")
             minDist = (goalScale.x + objScale.length()) * 0.5 + gap;
-        else if (exp.object == "circle" || exp.object == "triangle" || exp.object == "plus"/* || exp.object == "H"*/)
+        else if (exp.object == "circle" || exp.object == "triangle" || exp.object == "plus")
             minDist = (goalScale.x + objScale.x) * 0.5 + gap;
 
         // If last experiment finished (simulation not running), start new one

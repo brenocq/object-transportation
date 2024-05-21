@@ -393,7 +393,7 @@ void ProjectScript::selectObject(std::string objectName) {
         object.add<cmp::Mesh>()->set("triangle-object.obj");
         object.add<cmp::PolygonCollider2D>()->points = {{0.2, 0.2}, {-0.4, 0.2}, {0.2, -0.6}, {0.2, 0.2}};
     } else if (objectName == "plus") {
-        object.get<cmp::Transform>()->scale = atta::vec3(0.5f, 0.5f, 0.2f);
+        object.get<cmp::Transform>()->scale = atta::vec3(0.4f, 0.4f, 0.2f);
         object.add<cmp::Mesh>()->set("plus-object.obj");
         object.add<cmp::PolygonCollider2D>()->points = {{-0.05, 0.5}, {-0.05, 0.05}, {-0.5, 0.05}, {-0.5, -0.05}, {-0.05, -0.05},
             {-0.05, -0.5}, {0.05, -0.5}, {0.05, -0.05}, {0.5, -0.05}, {0.5, 0.05}, {0.05, 0.05}, {0.05, 0.5}, {-0.05, 0.5}};

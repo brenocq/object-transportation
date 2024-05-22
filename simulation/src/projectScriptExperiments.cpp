@@ -25,7 +25,7 @@ void ProjectScript::runExperiments() {
         if (atta::Config::getState() == atta::Config::State::IDLE) {
             // Set parameters
             pusherProto.get<cmp::Prototype>()->maxClones = exp.numRobots;
-            pusherProto.get<cmp::Script>()->set(exp.script);
+            selectScript(exp.script);
             selectMap(exp.map);
             selectObject(exp.object);
 

@@ -10,6 +10,7 @@
 #include <atta/component/components/relationship.h>
 #include <atta/component/components/transform.h>
 #include <atta/graphics/drawer.h>
+#include <atta/utils/config.h>
 #include <queue>
 
 namespace gfx = atta::graphics;
@@ -68,7 +69,8 @@ struct WallInfo {
     atta::vec2 pos;
     atta::vec2 size;
 };
-std::vector<WallInfo> teleopWalls;
+std::vector<WallInfo> teleopWalls;    ///< Map walls
+std::vector<WallInfo> teleopGapWalls; ///< Map walls with gap
 
 struct TeleopNode {
     atta::vec2 pos;
@@ -97,8 +99,8 @@ bool linesIntersect(const atta::vec2& a1, const atta::vec2& a2, const atta::vec2
 bool doesEdgeIntersectWalls(const atta::vec2& p1, const atta::vec2& p2, const std::vector<WallInfo>& walls) {
     for (const auto& wall : walls) {
         std::array<atta::vec2, 4> corners = {
-            wall.pos + 0.45f * atta::vec2{wall.size.x, wall.size.y}, wall.pos + 0.45f * atta::vec2{wall.size.x, -wall.size.y},
-            wall.pos + 0.45f * atta::vec2{-wall.size.x, -wall.size.y}, wall.pos + 0.45f * atta::vec2{-wall.size.x, wall.size.y}};
+            wall.pos + 0.5f * atta::vec2{wall.size.x, wall.size.y}, wall.pos + 0.5f * atta::vec2{wall.size.x, -wall.size.y},
+            wall.pos + 0.5f * atta::vec2{-wall.size.x, -wall.size.y}, wall.pos + 0.5f * atta::vec2{-wall.size.x, wall.size.y}};
         if (linesIntersect(p1, p2, corners[0], corners[1]) || linesIntersect(p1, p2, corners[1], corners[2]) ||
             linesIntersect(p1, p2, corners[2], corners[3]) || linesIntersect(p1, p2, corners[3], corners[0])) {
             return true;
@@ -132,16 +134,19 @@ atta::vec2 findPositionAtDistance(const std::vector<atta::vec2>& path, float dis
 void PusherTeleopScript::teleoperate() {
     //----- Create walls -----//
     teleopWalls.clear();
-    float gap = 0.1f; // 10cm
+    teleopGapWalls.clear();
+    atta::vec3 objScale = object.get<cmp::Transform>()->scale;
+    float gap = std::max(objScale.x, objScale.y) * 0.5;
     cmp::Relationship* obstR = obstacles.get<cmp::Relationship>();
     for (cmp::Entity obst : obstR->getChildren()) {
         cmp::Transform* t = obst.get<cmp::Transform>();
-        teleopWalls.push_back({.pos = {t->position.x, t->position.y}, .size = {t->scale.x + 2 * gap, t->scale.y + 2 * gap}});
+        teleopWalls.push_back({.pos = {t->position.x, t->position.y}, .size = {t->scale.x, t->scale.y}});
+        teleopGapWalls.push_back({.pos = {t->position.x, t->position.y}, .size = {t->scale.x + 2 * gap, t->scale.y + 2 * gap}});
     }
 
     //----- Create nodes -----//
     teleopNodes.clear();
-    for (const auto& w : teleopWalls) {
+    for (const auto& w : teleopGapWalls) {
         teleopNodes.push_back({.pos = w.pos + 0.5f * atta::vec2(w.size.x, w.size.y)});
         teleopNodes.push_back({.pos = w.pos + 0.5f * atta::vec2(w.size.x, -w.size.y)});
         teleopNodes.push_back({.pos = w.pos + 0.5f * atta::vec2(-w.size.x, -w.size.y)});
@@ -212,25 +217,37 @@ void PusherTeleopScript::teleoperate() {
     constexpr float OBJECT_DISTANCE = 0.5f;
     atta::vec2 teleopPos = findPositionAtDistance(teleopShortestPath, OBJECT_DISTANCE);
     cmp::Transform* t = _entity.get<cmp::Transform>();
-    t->position = atta::vec3(teleopPos, t->position.z);
+
+    // If less than 100ms of simulation, start at right position
+    if (atta::Config::getTime() == 0.0f)
+        t->position = atta::vec3(teleopPos, t->position.z);
+
+    atta::vec2 moveDir = teleopPos - atta::vec2(t->position);
+    float angle = -t->orientation.get2DAngle();
+    moveDir.normalize();
+    moveDir = atta::vec2(std::cos(angle) * moveDir.x - std::sin(angle) * moveDir.y, std::sin(angle) * moveDir.x + std::cos(angle) * moveDir.y);
+    PusherCommon::move(_entity, moveDir);
     _entity.get<cmp::Material>()->set("goal");
 
     //----- Graphical debugging -----//
     gfx::Drawer::clear("teleop");
     gfx::Drawer::Line line;
-    // line.c0 = line.c1 = atta::vec4(0.2f, 0.2f, 0.8f, 1.0f);
-    // for (const WallInfo& w : teleopWalls) {
-    //     std::vector<atta::vec2> corners;
-    //     corners.push_back(w.pos + 0.5f * atta::vec2(w.size.x, w.size.y));
-    //     corners.push_back(w.pos + 0.5f * atta::vec2(w.size.x, -w.size.y));
-    //     corners.push_back(w.pos + 0.5f * atta::vec2(-w.size.x, -w.size.y));
-    //     corners.push_back(w.pos + 0.5f * atta::vec2(-w.size.x, w.size.y));
-    //     for (size_t i = 0; i < 4; i++) {
-    //         line.p0 = atta::vec3(corners[i], 0.3);
-    //         line.p1 = atta::vec3(corners[(i+1)%corners.size()], 0.3);
-    //         gfx::Drawer::add(line, "teleop");
-    //     }
-    // }
+    line.c0 = line.c1 = atta::vec4(0.6f, 0.2f, 0.2f, 1.0f);
+    // Plot all edges
+    // for (const WallInfo& w : teleopGapWalls) {
+    //    std::vector<atta::vec2> corners;
+    //    corners.push_back(w.pos + 0.5f * atta::vec2(w.size.x, w.size.y));
+    //    corners.push_back(w.pos + 0.5f * atta::vec2(w.size.x, -w.size.y));
+    //    corners.push_back(w.pos + 0.5f * atta::vec2(-w.size.x, -w.size.y));
+    //    corners.push_back(w.pos + 0.5f * atta::vec2(-w.size.x, w.size.y));
+    //    for (size_t i = 0; i < 4; i++) {
+    //        line.p0 = atta::vec3(corners[i], 0.2);
+    //        line.p1 = atta::vec3(corners[(i + 1) % corners.size()], 0.2);
+    //        gfx::Drawer::add(line, "teleop");
+    //    }
+    //}
+
+    // Plot good edges
     line.c0 = line.c1 = atta::vec4(0.4f, 0.2f, 0.8f, 1.0f);
     for (const TeleopNode& n : teleopNodes) {
         for (const TeleopNode* neighbor : n.neighbors) {
@@ -239,6 +256,8 @@ void PusherTeleopScript::teleoperate() {
             gfx::Drawer::add(line, "teleop");
         }
     }
+
+    // Plot shortest path
     line.c0 = line.c1 = atta::vec4(0.4f, 0.8f, 0.2f, 1.0f);
     for (size_t i = 1; i < teleopShortestPath.size(); i++) {
         line.p0 = atta::vec3(teleopShortestPath[i - 1], 0.4);

@@ -26,6 +26,6 @@ void pushObject(cmp::Entity entity, PusherComponent* pusher);
 // Processing
 void processCameras(PusherComponent* pusher, std::array<cmp::CameraSensor*, 4> cams);
 
-}
+} // namespace PusherCommon
 
 #endif // PUSHER_COMMON_H

@@ -5,8 +5,8 @@
 //--------------------------------------------------
 #ifndef PROJECT_SCRIPT_H
 #define PROJECT_SCRIPT_H
-#include <atta/script/projectScript.h>
 #include "nlohmann/json.hpp"
+#include <atta/script/projectScript.h>
 
 namespace scr = atta::script;
 

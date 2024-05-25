@@ -16,7 +16,7 @@ void ProjectScript::uiControl() {
             break;
         }
 
-    ImGui::SetNextItemWidth(100.0f);
+    ImGui::SetNextItemWidth(120.0f);
     if (ImGui::Combo("Map##ComboMap", &selectedMap, optionsMap, 4)) {
         selectMap(optionsMap[selectedMap]);
     }
@@ -30,23 +30,25 @@ void ProjectScript::uiControl() {
             break;
         }
 
-    ImGui::SetNextItemWidth(100.0f);
+    ImGui::SetNextItemWidth(120.0f);
     if (ImGui::Combo("Object##ComboObject", &selectedObject, optionsObject, 5)) {
         selectObject(optionsObject[selectedObject]);
     }
 
     //----- Select script -----//
-    static const char* optionsScript[] = {"PusherPaperScript", "PusherScript"};
+    static const char* optionsScript[] = {"Chen et al.", "Proposed", "Teleoperated"};
+    std::map<const char*, const char*> optionToScript = {
+        {optionsScript[0], "PusherPaperScript"}, {optionsScript[1], "PusherScript"}, {optionsScript[2], "PusherTeleopScript"}};
     int selectedScript = 0;
-    for (int i = 0; i < 2; i++)
-        if (_currentScript == std::string(optionsScript[i])) {
+    for (int i = 0; i < 3; i++)
+        if (_currentScript == std::string(optionToScript[optionsScript[i]])) {
             selectedScript = i;
             break;
         }
 
-    ImGui::SetNextItemWidth(100.0f);
-    if (ImGui::Combo("Object##ComboScript", &selectedScript, optionsScript, 2)) {
-        selectScript(optionsScript[selectedScript]);
+    ImGui::SetNextItemWidth(120.0f);
+    if (ImGui::Combo("Script##ComboScript", &selectedScript, optionsScript, 3)) {
+        selectScript(optionToScript[optionsScript[selectedScript]]);
     }
 
     //----- Select initial position -----//
@@ -58,7 +60,7 @@ void ProjectScript::uiControl() {
             break;
         }
 
-    ImGui::SetNextItemWidth(100.0f);
+    ImGui::SetNextItemWidth(120.0f);
     if (ImGui::Combo("Initial robot positions##ComboInitialPos", &selectedInitialPos, optionsInitialPos, 3)) {
         _currentInitialPos = optionsInitialPos[selectedInitialPos];
         randomizePushers(_currentInitialPos);
@@ -108,11 +110,11 @@ void ProjectScript::uiExperiment() {
 }
 
 void ProjectScript::uiPusherInspector() {
-    ImGui::Text("Inspector");
     if (atta::Config::getState() != atta::Config::State::IDLE) {
         cmp::Entity selected = cmp::getSelectedEntity();
         cmp::Factory* factory = cmp::getFactory(pusherProto);
         if (factory->isRootClone(selected)) {
+            ImGui::Text("Inspector");
             cmp::Entity clone = selected;
             ImGui::Text("Pusher %d", clone.getId());
 
@@ -206,36 +208,5 @@ void ProjectScript::drawerPusherLines() {
                 gfx::Drawer::add(line, "directions");
             }
         }
-    }
-
-    // XXX debug
-    gfx::Drawer::clear("teleop");
-    gfx::Drawer::Line line;
-    //line.c0 = line.c1 = atta::vec4(0.2f, 0.2f, 0.8f, 1.0f);
-    //for (const WallInfo& w : teleopWalls) {
-    //    std::vector<atta::vec2> corners;
-    //    corners.push_back(w.pos + 0.5f * atta::vec2(w.size.x, w.size.y));
-    //    corners.push_back(w.pos + 0.5f * atta::vec2(w.size.x, -w.size.y));
-    //    corners.push_back(w.pos + 0.5f * atta::vec2(-w.size.x, -w.size.y));
-    //    corners.push_back(w.pos + 0.5f * atta::vec2(-w.size.x, w.size.y));
-    //    for (size_t i = 0; i < 4; i++) {
-    //        line.p0 = atta::vec3(corners[i], 0.3);
-    //        line.p1 = atta::vec3(corners[(i+1)%corners.size()], 0.3);
-    //        gfx::Drawer::add(line, "teleop");
-    //    }
-    //}
-    line.c0 = line.c1 = atta::vec4(0.4f, 0.2f, 0.8f, 1.0f);
-    for (const TeleopNode& n : teleopNodes) {
-        for (const TeleopNode* neighbor : n.neighbors) {
-            line.p0 = atta::vec3(n.pos, 0.3);
-            line.p1 = atta::vec3(neighbor->pos, 0.3);
-            gfx::Drawer::add(line, "teleop");
-        }
-    }
-    line.c0 = line.c1 = atta::vec4(0.4f, 0.8f, 0.2f, 1.0f);
-    for (size_t i = 1; i < teleopShortestPath.size(); i++) {
-        line.p0 = atta::vec3(teleopShortestPath[i - 1], 0.4);
-        line.p1 = atta::vec3(teleopShortestPath[i], 0.4);
-        gfx::Drawer::add(line, "teleop");
     }
 }

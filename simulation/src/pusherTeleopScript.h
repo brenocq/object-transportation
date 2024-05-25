@@ -1,10 +1,10 @@
 //--------------------------------------------------
 // Box Pushing
-// pusherPaperScript.h
+// pusherTeleopScript.h
 // Date: 2022-10-31
 //--------------------------------------------------
-#ifndef PUSHER_PAPER_SCRIPT_H
-#define PUSHER_PAPER_SCRIPT_H
+#ifndef PUSHER_TELEOP_SCRIPT_H
+#define PUSHER_TELEOP_SCRIPT_H
 #include "pusherComponent.h"
 #include <atta/component/components/cameraSensor.h>
 #include <atta/component/components/infraredSensor.h>
@@ -14,11 +14,13 @@
 namespace cmp = atta::component;
 namespace scr = atta::script;
 
-class PusherPaperScript : public scr::Script {
+class PusherTeleopScript : public scr::Script {
   public:
     void update(cmp::Entity entity, float dt) override;
 
   private:
+    void teleoperate();
+
     // States
     void randomWalk();
     void approachObject();
@@ -33,6 +35,6 @@ class PusherPaperScript : public scr::Script {
     std::array<float, 8> _irs;
 };
 
-ATTA_REGISTER_SCRIPT(PusherPaperScript)
+ATTA_REGISTER_SCRIPT(PusherTeleopScript)
 
-#endif // PUSHER_PAPER_SCRIPT_H
+#endif // PUSHER_TELEOP_SCRIPT_H

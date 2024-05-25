@@ -77,9 +77,9 @@ void ProjectScript::runExperiments() {
             _currentRepetition++;
             if (_currentRepetition == exp.numRepetitions) {
                 fs::create_directory("experiments");
-                fs::path file = fs::path("experiments") / std::string(exp.initialPos + "_init-" + exp.map + "-" + exp.script + "-" + std::to_string(exp.numRobots) + "_robots-" +
-                                                                      exp.object + "-" + std::to_string(exp.numRepetitions) +
-                                                                      "_rep.json");
+                fs::path file = fs::path("experiments") /
+                                std::string(exp.initialPos + "_init-" + exp.map + "-" + exp.script + "-" + std::to_string(exp.numRobots) +
+                                            "_robots-" + exp.object + "-" + std::to_string(exp.numRepetitions) + "_rep.json");
                 std::ofstream out(file);
                 LOG_INFO("ProjectScript", "Experiment [w]$0[] saved to [w]$1[]", file.stem().string(), fs::absolute(file));
                 out << _experimentResults;

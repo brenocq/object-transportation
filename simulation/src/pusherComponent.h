@@ -21,13 +21,13 @@ struct PusherComponent final : public cmp::Component {
     static constexpr float pushObjectTimeout = 60.0f;
 
     State state = State::RANDOM_WALK;
-    float timer = 0.0f;  // Timer to change state
+    float timer = 0.0f; // Timer to change state
     float lastFrameTime = 0.0f;
 
     // Auxiliar parameters
-    float randomWalkAux = 0.0f;  // Auxiliar parameter to perform random walk
-    bool clockwise = true;       // If should walk around object clockwise
-    bool couldSeeGoal = false;   // If could see goal in the last frame
+    float randomWalkAux = 0.0f; // Auxiliar parameter to perform random walk
+    bool clockwise = true;      // If should walk around object clockwise
+    bool couldSeeGoal = false;  // If could see goal in the last frame
     bool angleGreater90 = true; // Check if angle was greater than 90 when goal and object were visible
 
     bool canSeeObject() { return !std::isnan(objectDistance); }

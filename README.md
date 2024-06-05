@@ -19,7 +19,7 @@ After that, it is necessary to install Atta, we are using the version `458906d4`
 ```bash
 git clone git@github.com:brenocq/atta.git
 cd atta
-git checkout 458906d4
+git checkout object-transportation-project-fixes
 ./build.sh ---install
 ```
 

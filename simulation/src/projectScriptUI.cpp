@@ -61,10 +61,8 @@ void ProjectScript::uiControl() {
         }
 
     ImGui::SetNextItemWidth(120.0f);
-    if (ImGui::Combo("Initial robot positions##ComboInitialPos", &selectedInitialPos, optionsInitialPos, 3)) {
-        _currentInitialPos = optionsInitialPos[selectedInitialPos];
-        randomizePushers(_currentInitialPos);
-    }
+    if (ImGui::Combo("Initial robot positions##ComboInitialPos", &selectedInitialPos, optionsInitialPos, 3))
+        randomizePushers(optionsInitialPos[selectedInitialPos]);
 
     //----- Randomize pusher -----//
     if (ImGui::Button("Randomize pushers"))

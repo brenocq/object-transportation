@@ -6,6 +6,7 @@
 #include "pusherTeleopScript.h"
 #include "common.h"
 #include "pusherCommon.h"
+#include <algorithm>
 #include <atta/component/components/material.h>
 #include <atta/component/components/relationship.h>
 #include <atta/component/components/transform.h>

@@ -8,8 +8,6 @@
 #include <atta/component/components/transform.h>
 
 void PusherCommon::changeState(PusherComponent* pusher, PusherComponent::State state) {
-    // LOG_DEBUG("Pusher" + std::to_string(_entity.getCloneId()), "Changed to state $0", int(state));
-
     // Don't reset the timer if changed between MOVE_AROUND_OBJECT and PUSH_OBJECT
     if (state == PusherComponent::RANDOM_WALK || pusher->state == PusherComponent::RANDOM_WALK || state == PusherComponent::BE_A_GOAL ||
         pusher->state == PusherComponent::BE_A_GOAL)

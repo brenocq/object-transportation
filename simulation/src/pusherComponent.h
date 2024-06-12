@@ -23,6 +23,7 @@ struct PusherComponent final : public cmp::Component {
     State state = State::RANDOM_WALK;
     float timer = 0.0f; // Timer to change state
     float lastFrameTime = 0.0f;
+    float beAGoalWait = 0.0f; // Used to avoid switching back and forth between random and goal state
 
     // Auxiliar parameters
     float randomWalkAux = 0.0f; // Auxiliar parameter to perform random walk

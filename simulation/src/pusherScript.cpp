@@ -28,6 +28,7 @@ void PusherScript::update(cmp::Entity entity, float dt) {
 
     _pusher = _entity.get<PusherComponent>();
     _pusher->timer += dt;
+    _pusher->beAGoalWait = std::max(0.0f, _pusher->beAGoalWait - dt);
 
     PusherCommon::processCameras(_pusher, _cams);
 
@@ -52,6 +53,10 @@ void PusherScript::update(cmp::Entity entity, float dt) {
             break;
     }
 
+    // Avoid turning into a goal if it was a goal a short time ago
+    if (_pusher->beAGoalWait > 0.0f && _pusher->state == PusherComponent::BE_A_GOAL)
+        PusherCommon::changeState(_pusher, PusherComponent::RANDOM_WALK);
+
     _entity.get<cmp::Material>()->set(_pusher->state == PusherComponent::BE_A_GOAL ? "goal" : "pusher");
 }
 
@@ -67,6 +72,8 @@ void PusherScript::pushObject() { PusherCommon::pushObject(_entity, _pusher); }
 void PusherScript::beAGoal() {
     bool objectIsClose = _pusher->objectDistance == 0.0f && PusherCommon::distInDirection(_irs, _pusher->objectDirection) < 0.1;
     bool timeout = _pusher->timer >= PusherComponent::beAGoalTimeout;
-    if (_pusher->canSeeGoal() || objectIsClose || timeout)
+    if (_pusher->canSeeGoal() || objectIsClose || timeout) {
+        _pusher->beAGoalWait = rand() / float(RAND_MAX) * 5.0f; // Wait up to 5 seconds
         PusherCommon::changeState(_pusher, PusherComponent::RANDOM_WALK);
+    }
 }

@@ -351,6 +351,16 @@ void ProjectScript::selectObject(std::string objectName) {
         object.add<cmp::PolygonCollider2D>()->points = {{-0.05, 0.5},  {-0.05, 0.05}, {-0.5, 0.05},  {-0.5, -0.05}, {-0.05, -0.05},
                                                         {-0.05, -0.5}, {0.05, -0.5},  {0.05, -0.05}, {0.5, -0.05},  {0.5, 0.05},
                                                         {0.05, 0.05},  {0.05, 0.5},   {-0.05, 0.5}};
+    } else if (objectName == "H") {
+        object.get<cmp::Transform>()->scale = atta::vec3(0.4f, 0.4f, 0.2f);
+        object.add<cmp::Mesh>()->set("H-object.obj");
+        object.add<cmp::PolygonCollider2D>()->points = {{0.4, 0.05},  {-0.4, 0.05},  {-0.4, 0.5},  {-0.5, 0.5}, {-0.5, -0.5},
+                                                        {-0.4, -0.5}, {-0.4, -0.05}, {0.4, -0.05}, {0.4, -0.5}, {0.5, -0.5},
+                                                        {0.5, 0.5},   {0.4, 0.5},    {0.4, 0.05}};
+    } else if (objectName == "L") {
+        object.get<cmp::Transform>()->scale = atta::vec3(0.4f, 0.4f, 0.2f);
+        object.add<cmp::Mesh>()->set("L-object.obj");
+        object.add<cmp::PolygonCollider2D>()->points = {{-0.4, 0.5}, {-0.5, 0.5}, {-0.5, -0.5}, {0.5, -0.5}, {0.5, -0.4}, {-0.4, -0.4}, {-0.4, 0.5}};
     }
 
     _currentObject = objectName;

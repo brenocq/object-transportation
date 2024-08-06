@@ -16,7 +16,7 @@ void ProjectScript::runExperiments() {
         const float pusherDiam = pusherProto.get<cmp::Transform>()->scale.x;
         const float gap = 0.05;
         float minDist = 0.0f;
-        if (exp.object == "square" || exp.object == "rectangle")
+        if (exp.object == "square" || exp.object == "rectangle" || exp.object == "H" || exp.object == "L")
             minDist = (goalScale.x + objScale.length()) * 0.5 + gap;
         else if (exp.object == "circle" || exp.object == "triangle" || exp.object == "plus")
             minDist = (goalScale.x + objScale.x) * 0.5 + gap;

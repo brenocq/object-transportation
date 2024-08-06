@@ -22,16 +22,16 @@ void ProjectScript::uiControl() {
     }
 
     //----- Select object -----//
-    static const char* optionsObject[] = {"square", "rectangle", "circle", "triangle", "plus"};
+    static const char* optionsObject[] = {"square", "rectangle", "circle", "triangle", "plus", "H", "L"};
     int selectedObject = 0;
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 7; i++)
         if (_currentObject == std::string(optionsObject[i])) {
             selectedObject = i;
             break;
         }
 
     ImGui::SetNextItemWidth(120.0f);
-    if (ImGui::Combo("Object##ComboObject", &selectedObject, optionsObject, 5)) {
+    if (ImGui::Combo("Object##ComboObject", &selectedObject, optionsObject, 7)) {
         selectObject(optionsObject[selectedObject]);
     }
 

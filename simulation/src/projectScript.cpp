@@ -111,7 +111,7 @@ std::vector<Experiment> experiments = {
     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "square", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 50, .numRobots = 30, .timeout = gTimeout, .map = "reference", .object = "square", .initialPos="random", .script = "PusherScript"},
 
-    // Experiments on maps with obstacles
+    // Experiments with different maps
     {.numRepetitions = 50, .numRobots = 5, .timeout = gTimeout, .map = "corner", .object = "square", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 50, .numRobots = 10, .timeout = gTimeout, .map = "corner", .object = "square", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 50, .numRobots = 15, .timeout = gTimeout, .map = "corner", .object = "square", .initialPos="random", .script = "PusherScript"},
@@ -156,6 +156,32 @@ std::vector<Experiment> experiments = {
     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "plus", .initialPos = "random", .script = "PusherScript"},
     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "plus", .initialPos = "random", .script = "PusherScript"},
 
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "H", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "H", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "H", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "H", .initialPos = "random", .script = "PusherScript"},
+
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "L", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "L", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "L", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "L", .initialPos = "random", .script = "PusherScript"},
+
+    // Experiments with different initial positions
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "square", .initialPos="random", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "square", .initialPos="random", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "square", .initialPos="random", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "square", .initialPos="random", .script = "PusherScript"},
+
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "square", .initialPos="top", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "square", .initialPos="top", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "square", .initialPos="top", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "square", .initialPos="top", .script = "PusherScript"},
+
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "square", .initialPos="bottom", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "square", .initialPos="bottom", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "square", .initialPos="bottom", .script = "PusherScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "square", .initialPos="bottom", .script = "PusherScript"},
+
     //---------- Benchmark (Teleoperated) ----------//
     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "circle", .initialPos="random", .script = "PusherTeleopScript"},
     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "circle", .initialPos="random", .script = "PusherTeleopScript"},
@@ -182,30 +208,48 @@ std::vector<Experiment> experiments = {
     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "plus", .initialPos="random", .script = "PusherTeleopScript"},
     {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "plus", .initialPos="random", .script = "PusherTeleopScript"},
 
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "H", .initialPos="random", .script = "PusherTeleopScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "H", .initialPos="random", .script = "PusherTeleopScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "H", .initialPos="random", .script = "PusherTeleopScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "H", .initialPos="random", .script = "PusherTeleopScript"},
+
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "L", .initialPos="random", .script = "PusherTeleopScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "L", .initialPos="random", .script = "PusherTeleopScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "L", .initialPos="random", .script = "PusherTeleopScript"},
+    {.numRepetitions = 50, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "L", .initialPos="random", .script = "PusherTeleopScript"},
+
     //---------- Supplementary Video ----------//
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "circle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "square", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "rectangle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "triangle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "plus", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "L", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "H", .initialPos = "random", .script = "PusherScript"},
 
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "circle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "square", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "rectangle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "triangle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "plus", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "L", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "H", .initialPos = "random", .script = "PusherScript"},
 
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "circle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "square", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "rectangle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "triangle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "plus", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "L", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "corner", .object = "H", .initialPos = "random", .script = "PusherScript"},
 
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "circle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "square", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "rectangle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "triangle", .initialPos="random", .script = "PusherScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "plus", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "L", .initialPos = "random", .script = "PusherScript"},
+    {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "2-corners", .object = "H", .initialPos = "random", .script = "PusherScript"},
 
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "reference", .object = "square", .initialPos="random", .script = "PusherTeleopScript"},
     {.numRepetitions = 1, .numRobots = 20, .timeout = gTimeout, .map = "middle", .object = "square", .initialPos="random", .script = "PusherTeleopScript"},
